@@ -23,11 +23,20 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 
+interface ParsedData {
+  State?: string;
+  City?: string;
+  Hospname?: string;
+  Hospid?: string;
+  [key: string]: unknown;
+}
+
 interface Job {
   _id: string;
   project_id: string;
   status: string;
   files?: Array<{ filename: string; blob_url: string }>;
+  parsed_data?: ParsedData;
   created_at?: string;
 }
 
@@ -113,6 +122,9 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
           <TableHeader className="bg-muted/30 border-b border-border/50">
             <TableRow className="hover:bg-transparent">
               <TableHead className="text-foreground/70 font-semibold">Job ID</TableHead>
+              <TableHead className="text-foreground/70 font-semibold">State</TableHead>
+              <TableHead className="text-foreground/70 font-semibold">City</TableHead>
+              <TableHead className="text-foreground/70 font-semibold">Hospital Name</TableHead>
               <TableHead className="text-foreground/70 font-semibold">Status</TableHead>
               <TableHead className="text-foreground/70 font-semibold">Files</TableHead>
               <TableHead className="text-foreground/70 font-semibold">Created Date</TableHead>
@@ -126,6 +138,9 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
                 className="border-border/30 hover:bg-muted/50 transition-colors duration-200"
               >
                 <TableCell className="font-mono text-xs text-muted-foreground">{job._id.slice(-8)}</TableCell>
+                <TableCell className="text-foreground/80">{job.parsed_data?.State || 'N/A'}</TableCell>
+                <TableCell className="text-foreground/80">{job.parsed_data?.City || 'N/A'}</TableCell>
+                <TableCell className="text-foreground/80 max-w-xs truncate">{job.parsed_data?.Hospname || 'N/A'}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadge(job.status)} className="capitalize">
                     {job.status}
