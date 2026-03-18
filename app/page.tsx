@@ -3,6 +3,7 @@ import { serializeDocuments } from '@/lib/serialize';
 import { Sidebar } from '@/components/dashboard/sidebar';
 import { Header } from '@/components/dashboard/header';
 import { ProjectList } from '@/components/dashboard/project-list';
+import { ZipProcessor } from '@/components/dashboard/zip-processor';
 
 interface Project {
   _id: string;
@@ -38,7 +39,9 @@ export default async function Home() {
       <Sidebar projects={projects} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title="Projects" />
-        <main className="flex-1 overflow-auto p-8 space-y-6">
+        <main className="flex-1 overflow-auto p-8 space-y-8">
+          <ZipProcessor />
+          <div className="h-px bg-border/50" />
           {error ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
