@@ -28,8 +28,26 @@ export async function GET(
     // Get total count for pagination
     const total = await jobsCollection.countDocuments({ project_id: projectId });
 
+    // Get status counts
+    const statusCounts = await jobsCollection.aggregate([
+      { $match: { project_id: projectId } },
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]).toArray();
+
+    const counts: Record<string, number> = {
+      pending: 0,
+      processing: 0,
+      completed: 0,
+      failed: 0,
+      total: total
+    };
+    statusCounts.forEach((s: any) => {
+      counts[s._id] = s.count;
+    });
+
     return NextResponse.json({
       jobs: serializeDocuments(jobs),
+      counts,
       pagination: {
         page,
         limit,
