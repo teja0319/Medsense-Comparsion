@@ -22,7 +22,9 @@ interface CityData {
 
 interface StateData {
   state: string;
-  cities: CityData[];
+  totalCities: number;
+  totalHospitals: number;
+  totalProcedures: number;
 }
 
 interface StatesListProps {
@@ -31,6 +33,7 @@ interface StatesListProps {
 
 export function CitiesList({ projectId }: StatesListProps) {
   const [states, setStates] = useState<StateData[]>([]);
+  const [expandedStates, setExpandedStates] = useState<Record<string, { loading: boolean; cities?: CityData[] }>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
@@ -43,9 +46,7 @@ export function CitiesList({ projectId }: StatesListProps) {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(
-        `/api/projects/${projectId}/cities`
-      );
+      const response = await fetch(`/api/projects/${projectId}/states`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch states');
@@ -59,6 +60,35 @@ export function CitiesList({ projectId }: StatesListProps) {
       toast.error(`Error: ${message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleState = async (stateName: string) => {
+    if (expandedStates[stateName]) {
+      setExpandedStates((prev) => {
+        const next = { ...prev };
+        delete next[stateName];
+        return next;
+      });
+      return;
+    }
+
+    setExpandedStates((prev) => ({ ...prev, [stateName]: { loading: true } }));
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/cities?state=${encodeURIComponent(stateName)}`
+      );
+      if (!response.ok) throw new Error('Failed to fetch cities');
+      const data = await response.json();
+      const cities = data.states?.[0]?.cities || [];
+      setExpandedStates((prev) => ({ ...prev, [stateName]: { loading: false, cities } }));
+    } catch (err) {
+      toast.error('Failed to load cities');
+      setExpandedStates((prev) => {
+        const next = { ...prev };
+        delete next[stateName];
+        return next;
+      });
     }
   };
 
@@ -274,28 +304,23 @@ export function CitiesList({ projectId }: StatesListProps) {
       </div>
 
       {states.map((stateData) => {
-        const totalCities = stateData.cities.length;
-        const totalHospitals = new Set(
-          stateData.cities.flatMap((c) =>
-            c.jobs.map((j) => j.parsed_data?.Hospname)
-          )
-        ).size;
-        const totalProcedures = stateData.cities.reduce(
-          (sum, city) =>
-            sum +
-            city.jobs.reduce(
-              (citySum, job) => citySum + (job.parsed_data?.procedures?.length || 0),
-              0
-            ),
-          0
-        );
+        const totalCities = stateData.totalCities || 0;
+        const totalHospitals = stateData.totalHospitals || 0;
+        const totalProcedures = stateData.totalProcedures || 0;
+
+        const isExpanded = !!expandedStates[stateData.state];
+        const stateLoading = expandedStates[stateData.state]?.loading;
+        const stateCities = expandedStates[stateData.state]?.cities || [];
 
         return (
           <div key={stateData.state} className="space-y-4">
             <div className="rounded-lg border p-4 bg-card">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold text-foreground">
+              <div 
+                className="flex items-start justify-between cursor-pointer group"
+                onClick={() => toggleState(stateData.state)}
+              >
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-foreground group-hover:text-blue-600 transition-colors">
                     {stateData.state}
                   </h3>
                   <div className="mt-2 space-y-1 text-sm text-muted-foreground">
@@ -312,11 +337,19 @@ export function CitiesList({ projectId }: StatesListProps) {
                     </div>
                   </div>
                 </div>
+                <div className="text-muted-foreground mr-2">
+                  {stateLoading ? (
+                    <Spinner className="h-5 w-5" />
+                  ) : (
+                    <span className="text-2xl">{isExpanded ? '−' : '+'}</span>
+                  )}
+                </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  onClick={() => downloadBulkZip(stateData.state)}
+              {isExpanded && (
+                <div className="mt-4 flex flex-wrap gap-2 pt-2 border-t">
+                  <Button
+                    onClick={() => downloadBulkZip(stateData.state)}
                   disabled={downloading === `bulk:${stateData.state}:all`}
                   size="sm"
                   className="gap-2 bg-blue-600 hover:bg-blue-700"
@@ -363,17 +396,27 @@ export function CitiesList({ projectId }: StatesListProps) {
                     : 'Room Charges'}
                 </Button>
               </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ml-4">
-              {stateData.cities.map((cityData) => {
-                const totalHospitalsInCity = new Set(
-                  cityData.jobs.map((j) => j.parsed_data?.Hospname)
-                ).size;
-                const totalProceduresInCity = cityData.jobs.reduce(
-                  (sum, job) => sum + (job.parsed_data?.procedures?.length || 0),
-                  0
-                );
+            {isExpanded && !stateLoading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ml-4">
+                {stateCities.map((cityData: CityData) => {
+                  const totalHospitalsInCity = new Set(
+                    cityData.jobs.map((j: any) => {
+                      let hospName = j.parsed_data?.Hospname || 'Unknown Hospital';
+                      let hospCode = j.parsed_data?.Hospid || '';
+                      if (!hospCode && j.files && j.files.length > 0) {
+                         const match = j.files[0].filename.match(/^(.+?)-(\d+)\.pdf$/);
+                         if (match) hospCode = match[2];
+                      }
+                      return `${hospCode}-${hospName}`.toLowerCase().trim();
+                    })
+                  ).size;
+                  const totalProceduresInCity = cityData.jobs.reduce(
+                    (sum: number, job: any) => sum + (job.parsed_data?.procedures?.length || 0),
+                    0
+                  );
 
                 return (
                   <Card
@@ -397,17 +440,24 @@ export function CitiesList({ projectId }: StatesListProps) {
                         </div>
                       </div>
 
-                      <div className="space-y-1 py-2 border-t text-xs text-muted-foreground">
-                        {cityData.jobs.slice(0, 2).map((job, idx) => (
-                          <div key={idx} className="truncate">
-                            • {job.parsed_data?.Hospname || 'Unknown Hospital'}
+                      <div className="space-y-1 py-2 border-t text-xs text-muted-foreground max-h-48 overflow-y-auto pr-2">
+                        {Array.from(new Map<string, { hospName: string; hospCode: string }>(
+                          cityData.jobs.map((job: any) => {
+                            const hospName = job.parsed_data?.Hospname || 'Unknown Hospital';
+                            let hospCode = job.parsed_data?.Hospid || '';
+                            
+                            if (!hospCode && job.files && job.files.length > 0) {
+                               const match = job.files[0].filename.match(/^(.+?)-(\d+)\.pdf$/);
+                               if (match) hospCode = match[2];
+                            }
+                            // Lowercase matching key for correct deduplication matching
+                            return [`${hospCode}-${hospName}`.toLowerCase().trim(), { hospName, hospCode }];
+                          })
+                        ).values()).map(({ hospName, hospCode }, idx) => (
+                          <div key={idx} className="truncate" title={`${hospName} ${hospCode ? `(${hospCode})` : ''}`}>
+                            • {hospName} {hospCode ? `(${hospCode})` : ''}
                           </div>
                         ))}
-                        {cityData.jobs.length > 2 && (
-                          <div className="text-xs italic pt-1">
-                            +{cityData.jobs.length - 2} more
-                          </div>
-                        )}
                       </div>
 
                       <div className="flex flex-col gap-2 pt-1">
@@ -498,6 +548,7 @@ export function CitiesList({ projectId }: StatesListProps) {
                 );
               })}
             </div>
+            )}
           </div>
         );
       })}

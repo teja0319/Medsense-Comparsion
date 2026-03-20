@@ -48,10 +48,29 @@ export async function GET(
     const client = await getMongoClient();
     const db = client.db(process.env.MONGODB_DB_NAME || 'admin');
     const jobsCollection = db.collection('parsing_jobs');
+    const stateParam = request.nextUrl.searchParams.get('state');
 
-    // Fetch all jobs for this project
+    const query: any = { project_id: projectId };
+    if (stateParam) {
+      // Use regex for case-insensitive state matching
+      query.state = { $regex: new RegExp(`^${stateParam.trim()}$`, 'i') };
+    }
+
+    // Fetch all jobs for this project with a strict projection to avoid hanging the UI
     const jobs = await jobsCollection
-      .find({ project_id: projectId })
+      .find(
+        query,
+        {
+          projection: {
+            state: 1,
+            city: 1,
+            'parsed_data.Hospname': 1,
+            'parsed_data.Hospid': 1,
+            'parsed_data.procedures': 1,
+            'files.filename': 1
+          }
+        }
+      )
       .sort({ created_at: -1 })
       .toArray();
 

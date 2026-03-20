@@ -29,8 +29,8 @@ export interface Job {
 }
 
 export function extractHospitalInfoFromFilename(filename: string): { name: string; id: string } {
-  // Format: "HospitalName-12345.pdf" or "Hospital%20Name-12345.pdf"
-  const match = filename.match(/^(.+?)-(\d{5})\.pdf$/);
+  // Format: "HospitalName-12345.pdf" or "Hospital%20Name-8899.pdf"
+  const match = filename.match(/^(.+?)-(\d+)\.pdf$/);
   if (match) {
     let name = match[1];
     const id = match[2];
@@ -352,7 +352,7 @@ export function buildTermsRows(jobs: Job[]) {
 
 export function buildRoomChargeRows(jobs: Job[]) {
   const rows: any[][] = [
-    ['Hospid', 'Hospname', 'City', 'Header', 'Value', 'Description', 'Remarks'],
+    ['Hospid', 'Hospname', 'City', 'Room Rent', 'Cost', 'Description', 'Remarks'],
   ];
 
   jobs.forEach((job) => {
