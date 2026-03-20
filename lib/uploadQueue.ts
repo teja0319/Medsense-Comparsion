@@ -13,8 +13,8 @@ export type ProcessTask = {
 class RateLimitedQueue {
   private queue: ProcessTask[] = [];
   private isProcessing = false;
-  // 40 requests per minute = 60,000 ms -> 1500ms delay per request
-  private minDelayMs = 1500;
+  // 100 requests per minute = 60,000 ms -> 600ms delay per request
+  private minDelayMs = 600;
   private lastRunTime = 0;
 
   add(task: ProcessTask) {

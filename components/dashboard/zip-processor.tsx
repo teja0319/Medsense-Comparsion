@@ -192,7 +192,7 @@ export function ZipProcessor() {
                 />
              </div>
              <p className="text-[9px] text-center text-muted-foreground">
-               {polling ? "Processing... 40 files/min" : "Processing complete."}
+               {polling ? "Processing... 100 files/min" : "Processing complete."}
              </p>
           </div>
         </div>

@@ -188,8 +188,8 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
                 className="border-border/30 hover:bg-muted/50 transition-colors duration-200"
               >
                 <TableCell className="font-mono text-xs text-muted-foreground">{job._id.slice(-8)}</TableCell>
-                <TableCell className="text-foreground/80">{job.parsed_data?.State || 'N/A'}</TableCell>
-                <TableCell className="text-foreground/80">{job.parsed_data?.City || 'N/A'}</TableCell>
+                <TableCell className="text-foreground/80">{job.state || 'N/A'}</TableCell>
+                <TableCell className="text-foreground/80">{job.city || 'N/A'}</TableCell>
                 <TableCell className="text-foreground/80 max-w-xs truncate">{job.parsed_data?.Hospname || 'N/A'}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadge(job.status)} className="capitalize">

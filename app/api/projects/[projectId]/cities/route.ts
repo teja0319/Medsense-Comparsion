@@ -62,9 +62,9 @@ export async function GET(
     >();
 
     jobs.forEach((job: any) => {
-      const originalState = job.parsed_data?.State || 'Unknown';
+      const originalState = job.state || 'Unknown';
       const normalizedState = originalState.toLowerCase().trim();
-      const originalCity = job.parsed_data?.City || 'Unknown';
+      const originalCity = job.city || 'Unknown';
       const normalizedCity = originalCity.toLowerCase().trim();
 
       if (!statesMap.has(normalizedState)) {

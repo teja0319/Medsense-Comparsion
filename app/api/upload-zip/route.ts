@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       message: "File processing started",
       sessionId,
       queuedFiles: queuedCount,
-      estimatedMinutes: Math.ceil(queuedCount / 40)
+      estimatedMinutes: Math.ceil(queuedCount / 100)
     });
 
   } catch (error: any) {

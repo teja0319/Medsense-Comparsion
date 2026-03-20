@@ -121,12 +121,12 @@ export async function GET(
     const stateRegex = new RegExp(stateParam, 'i');
     const query: any = {
       project_id: projectId,
-      'parsed_data.State': stateRegex,
+      'state': stateRegex,
     };
 
     if (cityParam) {
       const cityRegex = new RegExp(cityParam, 'i');
-      query['parsed_data.City'] = cityRegex;
+      query['city'] = cityRegex;
     }
 
     // Fetch jobs
@@ -169,7 +169,7 @@ export async function GET(
     console.log(`Created ZIP file: ${filename}, size: ${zipBuffer.length} bytes`);
 
     // Return ZIP as response
-    return new NextResponse(zipBuffer, {
+    return new NextResponse(zipBuffer as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/zip',

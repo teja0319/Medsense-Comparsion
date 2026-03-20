@@ -103,10 +103,10 @@ export async function fetchJobs(projectId: string, stateParam?: string, cityPara
 
   const query: any = { project_id: projectId };
   if (stateParam) {
-    query['parsed_data.State'] = { $regex: `^${stateParam.trim()}$`, $options: 'i' };
+    query['state'] = { $regex: `^${stateParam.trim()}$`, $options: 'i' };
   }
   if (cityParam) {
-    query['parsed_data.City'] = { $regex: `^${cityParam.trim()}$`, $options: 'i' };
+    query['city'] = { $regex: `^${cityParam.trim()}$`, $options: 'i' };
   }
 
   return jobsCollection.find(query).sort({ created_at: -1 }).toArray();
@@ -126,7 +126,7 @@ export function buildHospitalInfo(job: Job) {
     hospName = parsedData?.Hospname || '';
   }
 
-  const city = parsedData?.City || '';
+  const city = (job as any).city || parsedData?.City || '';
   return { hospId, hospName, city };
 }
 
@@ -259,6 +259,7 @@ export function extractRoomCharges(parsedData: any) {
           header: 'N/A',
           value: 0,
           description,
+          remarks: 'NA',
         },
       ];
     }
@@ -274,7 +275,7 @@ export function extractRoomCharges(parsedData: any) {
     return expandItem(raw);
   }
 
-  return [{ header: 'N/A', value: 0, description: 'NA' }];
+  return [{ header: 'N/A', value: 0, description: 'NA', remarks: 'NA' }];
 }
 
 export function buildProceduresRows(jobs: Job[]) {
@@ -361,7 +362,7 @@ export function buildRoomChargeRows(jobs: Job[]) {
     const { hospId, hospName, city } = buildHospitalInfo(job);
     const items = extractRoomCharges(parsedData);
 
-    items.forEach((item) => {
+    items.forEach((item: any) => {
       rows.push([
         hospId,
         hospName,
