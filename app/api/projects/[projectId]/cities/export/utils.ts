@@ -328,22 +328,22 @@ export function buildProceduresRows(jobs: Job[]) {
 }
 
 export function buildTermsRows(jobs: Job[]) {
-  const rows: any[][] = [['Hospid', 'Hospname', 'City', 'Terms', 'Conditions', 'Note']];
+  const rows: any[][] = [['Hospid', 'Hospname', 'City', 'Note']];
 
   jobs.forEach((job) => {
     const parsedData = job.parsed_data;
     if (!parsedData) return;
 
     const { hospId, hospName, city } = buildHospitalInfo(job);
-    const { terms, conditions, notes } = extractTermsAndNotes(parsedData);
+    const { notes } = extractTermsAndNotes(parsedData);
 
     if (notes.length === 0) {
-      rows.push([hospId, hospName, city, terms, conditions, '']);
+      rows.push([hospId, hospName, city, '']);
       return;
     }
 
     notes.forEach((note) => {
-      rows.push([hospId, hospName, city, terms, conditions, note]);
+      rows.push([hospId, hospName, city, note]);
     });
   });
 

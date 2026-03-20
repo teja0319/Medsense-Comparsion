@@ -141,30 +141,56 @@ export async function GET(
     }
 
     // Build export data
-    const proceduresRows = buildProceduresRows(jobs);
-    const termsRows = buildTermsRows(jobs);
-    const roomChargeRows = buildRoomChargeRows(jobs);
-
-    console.log(`Data rows - Procedures: ${proceduresRows.length}, Terms: ${termsRows.length}, Room: ${roomChargeRows.length}`);
-
-    // Convert to HTML (Excel format)
-    const proceduresHtml = convertToExcelHtml(proceduresRows);
-    const termsHtml = convertToExcelHtml(termsRows);
-    const roomChargeHtml = convertToExcelHtml(roomChargeRows);
-
-    // Get state and city folder names
     const folderState = stateParam.replace(/\s+/g, '_');
-    const folderCity = cityParam ? cityParam.replace(/\s+/g, '_') : 'All_Cities';
-    const folderPath = `Extraction Of Hospital Data/${folderState}/${folderCity}`;
+    const filesToZip: Array<{ name: string; data: string }> = [];
+
+    if (cityParam) {
+      // Single city export
+      const folderCity = cityParam.replace(/\s+/g, '_');
+      const folderPath = `Extraction Of Hospital Data/${folderState}/${folderCity}`;
+
+      const proceduresRows = buildProceduresRows(jobs);
+      const termsRows = buildTermsRows(jobs);
+      const roomChargeRows = buildRoomChargeRows(jobs);
+
+      filesToZip.push(
+        { name: `${folderPath}/procedures.xls`, data: convertToExcelHtml(proceduresRows) },
+        { name: `${folderPath}/terms_and_notes.xls`, data: convertToExcelHtml(termsRows) },
+        { name: `${folderPath}/room_charges.xls`, data: convertToExcelHtml(roomChargeRows) }
+      );
+    } else {
+      // State-level export: Group by city and create folders for each
+      const jobsByCity: Record<string, any[]> = {};
+      
+      jobs.forEach(job => {
+        const city = job.city?.trim() || 'Unknown_City';
+        if (!jobsByCity[city]) {
+          jobsByCity[city] = [];
+        }
+        jobsByCity[city].push(job);
+      });
+
+      for (const [city, cityJobs] of Object.entries(jobsByCity)) {
+        const folderCity = city.replace(/\s+/g, '_');
+        const folderPath = `Extraction Of Hospital Data/${folderState}/${folderCity}`;
+
+        const proceduresRows = buildProceduresRows(cityJobs);
+        const termsRows = buildTermsRows(cityJobs);
+        const roomChargeRows = buildRoomChargeRows(cityJobs);
+
+        filesToZip.push(
+          { name: `${folderPath}/procedures.xls`, data: convertToExcelHtml(proceduresRows) },
+          { name: `${folderPath}/terms_and_notes.xls`, data: convertToExcelHtml(termsRows) },
+          { name: `${folderPath}/room_charges.xls`, data: convertToExcelHtml(roomChargeRows) }
+        );
+      }
+    }
 
     // Create ZIP
-    const zipBuffer = createZipBuffer([
-      { name: `${folderPath}/procedures.xls`, data: proceduresHtml },
-      { name: `${folderPath}/terms_and_notes.xls`, data: termsHtml },
-      { name: `${folderPath}/room_charges.xls`, data: roomChargeHtml },
-    ]);
+    const zipBuffer = createZipBuffer(filesToZip);
 
-    const filename = `Hospital_Data_${folderState}_${cityParam ? folderCity : 'All_Cities'}.zip`;
+    const formattedCityParam = cityParam ? cityParam.replace(/\s+/g, '_') : 'All_Cities';
+    const filename = `Hospital_Data_${folderState}_${formattedCityParam}.zip`;
 
     console.log(`Created ZIP file: ${filename}, size: ${zipBuffer.length} bytes`);
 
