@@ -29,8 +29,8 @@ export interface Job {
 }
 
 export function extractHospitalInfoFromFilename(filename: string): { name: string; id: string } {
-  // Format: "HospitalName-12345.pdf" or "Hospital%20Name-8899.pdf"
-  const match = filename.match(/^(.+?)-(\d+)\.pdf$/);
+  // Format: "HospitalName-12345.pdf" or "Hospital Name18362.pdf" or "Hospital Name+123.pdf"
+  const match = filename.match(/^(.+?)[-+_\s]*(\d+)\.pdf$/i);
   if (match) {
     let name = match[1];
     const id = match[2];
@@ -39,7 +39,7 @@ export function extractHospitalInfoFromFilename(filename: string): { name: strin
     try {
       name = decodeURIComponent(name);
       // Replace underscores with spaces
-      name = name.replace(/_/g, ' ');
+      name = name.replace(/_/g, ' ').trim();
     } catch (e) {
       // If decoding fails, just use as is
     }
@@ -113,20 +113,16 @@ export async function fetchJobs(projectId: string, stateParam?: string, cityPara
 }
 
 export function buildHospitalInfo(job: Job) {
-  const parsedData = job.parsed_data;
   let hospId = '';
   let hospName = '';
 
   if (job.files && job.files.length > 0) {
     const filenameInfo = extractHospitalInfoFromFilename(job.files[0].filename);
-    hospId = filenameInfo.id || parsedData?.Hospid || '';
-    hospName = filenameInfo.name || parsedData?.Hospname || '';
-  } else {
-    hospId = parsedData?.Hospid || '';
-    hospName = parsedData?.Hospname || '';
+    hospId = filenameInfo.id || '';
+    hospName = filenameInfo.name || '';
   }
 
-  const city = (job as any).city || parsedData?.City || '';
+  const city = (job as any).city || '';
   return { hospId, hospName, city };
 }
 
@@ -301,6 +297,11 @@ export function buildProceduresRows(jobs: Job[]) {
     const { hospId, hospName } = buildHospitalInfo(job);
     const procedures = parsedData.procedures || [];
 
+    if (procedures.length === 0) {
+      rows.push([hospId, hospName, 'NA', '', '', '', '', '', 'No procedures found', 0]);
+      return;
+    }
+
     procedures.forEach((proc: ParsedProcedure) => {
       const inclusions = proc.Inclusions?.trim() || '';
       const remarksValue = proc.Remarks?.trim() || '';
@@ -309,10 +310,21 @@ export function buildProceduresRows(jobs: Job[]) {
         .filter(Boolean)
         .join(' | ');
 
+      let procCode = String(proc['Procedure Codes'] || 'NA').trim();
+      const isUselessNumeric = (code: string) => {
+        if (!/^\d+$/.test(code)) return false;
+        const n = parseInt(code, 10);
+        return n >= 1 && n <= 500;
+      };
+      
+      if (isUselessNumeric(procCode)) {
+        procCode = 'N/A';
+      }
+
       rows.push([
         hospId,
         hospName,
-        proc['Procedure Codes'] || 'NA',
+        procCode,
         proc.Specialty || '',
         proc.Procedures || '',
         proc['General /Economy Ward Ac'] ?? '',

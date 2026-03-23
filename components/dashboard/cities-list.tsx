@@ -402,17 +402,7 @@ export function CitiesList({ projectId }: StatesListProps) {
             {isExpanded && !stateLoading && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ml-4">
                 {stateCities.map((cityData: CityData) => {
-                  const totalHospitalsInCity = new Set(
-                    cityData.jobs.map((j: any) => {
-                      let hospName = j.parsed_data?.Hospname || 'Unknown Hospital';
-                      let hospCode = j.parsed_data?.Hospid || '';
-                      if (!hospCode && j.files && j.files.length > 0) {
-                         const match = j.files[0].filename.match(/^(.+?)-(\d+)\.pdf$/);
-                         if (match) hospCode = match[2];
-                      }
-                      return `${hospCode}-${hospName}`.toLowerCase().trim();
-                    })
-                  ).size;
+                  const totalHospitalsInCity = cityData.jobs.length;
                   const totalProceduresInCity = cityData.jobs.reduce(
                     (sum: number, job: any) => sum + (job.parsed_data?.procedures?.length || 0),
                     0
@@ -441,23 +431,30 @@ export function CitiesList({ projectId }: StatesListProps) {
                       </div>
 
                       <div className="space-y-1 py-2 border-t text-xs text-muted-foreground max-h-48 overflow-y-auto pr-2">
-                        {Array.from(new Map<string, { hospName: string; hospCode: string }>(
-                          cityData.jobs.map((job: any) => {
-                            const hospName = job.parsed_data?.Hospname || 'Unknown Hospital';
-                            let hospCode = job.parsed_data?.Hospid || '';
+                        {cityData.jobs.map((job: any, idx: number) => {
+                            let hospName = job.parsed_data?.Hospname;
+                            let hospCode = job.parsed_data?.Hospid;
                             
-                            if (!hospCode && job.files && job.files.length > 0) {
-                               const match = job.files[0].filename.match(/^(.+?)-(\d+)\.pdf$/);
-                               if (match) hospCode = match[2];
+                            if ((!hospCode || !hospName) && job.files && job.files.length > 0) {
+                               const match = job.files[0].filename.match(/^(.+?)[-+_\s]*(\d+)\.pdf$/i);
+                               if (match) {
+                                  if (!hospName) {
+                                    try { hospName = decodeURIComponent(match[1]).replace(/_/g, ' ').trim(); } 
+                                    catch { hospName = match[1].replace(/_/g, ' ').trim(); }
+                                  }
+                                  if (!hospCode) hospCode = match[2];
+                               } else {
+                                  if (!hospName) hospName = job.files[0].filename; // Fallback to raw filename if parsing fails completely
+                               }
                             }
-                            // Lowercase matching key for correct deduplication matching
-                            return [`${hospCode}-${hospName}`.toLowerCase().trim(), { hospName, hospCode }];
-                          })
-                        ).values()).map(({ hospName, hospCode }, idx) => (
-                          <div key={idx} className="truncate" title={`${hospName} ${hospCode ? `(${hospCode})` : ''}`}>
-                            • {hospName} {hospCode ? `(${hospCode})` : ''}
-                          </div>
-                        ))}
+                            hospName = hospName || 'Unknown Hospital';
+
+                            return (
+                               <div key={idx} className="truncate text-[11px]" title={`${hospName} ${hospCode ? `(${hospCode})` : ''}`}>
+                                 • {hospName} {hospCode ? `(${hospCode})` : ''}
+                               </div>
+                            )
+                        })}
                       </div>
 
                       <div className="flex flex-col gap-2 pt-1">

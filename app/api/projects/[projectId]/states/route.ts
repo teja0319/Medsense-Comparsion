@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getMongoClient } from '@/lib/mongodb';
 
@@ -13,16 +15,44 @@ export async function GET(
 
     const pipeline = [
       { $match: { project_id: projectId } },
-      // Group by state, city, and normalized hospital name/id to count unique hospitals
+      // Sort so 'completed' is preferred when grouping duplicates by filename
+      // 'completed' (c) comes before 'failed' (f) or 'pending' (p)
+      { $sort: { status: 1, created_at: -1 } },
+      // Deduplicate strictly by filename ONLY if state is 'uttar pardesh', otherwise use _id
+      {
+        $group: {
+          _id: {
+            $cond: {
+              if: {
+                $eq: [
+                  { $toLower: { $trim: { input: { $ifNull: ["$state", ""] } } } },
+                  "uttar pardesh"
+                ]
+              },
+              then: {
+                $cond: {
+                  if: { $gt: [{ $size: { $ifNull: ["$files", []] } }, 0] },
+                  then: { $arrayElemAt: ["$files.filename", 0] },
+                  else: "$_id"
+                }
+              },
+              else: "$_id"
+            }
+          },
+          doc: { $first: "$$ROOT" }
+        }
+      },
+      // Restore the root document for further processing
+      { $replaceRoot: { newRoot: "$doc" } },
+      // Now group by State and City to get precise PDF/Hospital counts
       {
         $group: {
           _id: {
             state: { $toLower: { $trim: { input: { $ifNull: ["$state", "Unknown"] } } } },
-            city: { $toLower: { $trim: { input: { $ifNull: ["$city", "Unknown"] } } } },
-            hospCode: { $toLower: { $trim: { input: { $ifNull: ["$parsed_data.Hospid", ""] } } } },
-            hospName: { $toLower: { $trim: { input: { $ifNull: ["$parsed_data.Hospname", ""] } } } }
+            city: { $toLower: { $trim: { input: { $ifNull: ["$city", "Unknown"] } } } }
           },
           originalState: { $first: { $ifNull: ["$state", "Unknown"] } },
+          hospitalsInCity: { $sum: 1 }, 
           procedureCount: {
             $sum: {
               $cond: {
@@ -34,19 +64,7 @@ export async function GET(
           }
         }
       },
-      // Group by state and city to count cities and hospitals per city
-      {
-        $group: {
-          _id: {
-            state: "$_id.state",
-            city: "$_id.city"
-          },
-          originalState: { $first: "$originalState" },
-          hospitalsInCity: { $sum: 1 }, 
-          procedureCount: { $sum: "$procedureCount" }
-        }
-      },
-      // Group by state to get final stats
+      // Finally, group by state for the UI tabular data
       {
         $group: {
           _id: "$_id.state",

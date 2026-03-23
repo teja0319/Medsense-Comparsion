@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getMongoClient } from '@/lib/mongodb';
 
@@ -57,22 +59,46 @@ export async function GET(
     }
 
     // Fetch all jobs for this project with a strict projection to avoid hanging the UI
-    const jobs = await jobsCollection
+    let jobs = await jobsCollection
       .find(
         query,
         {
           projection: {
             state: 1,
             city: 1,
+            status: 1,
             'parsed_data.Hospname': 1,
             'parsed_data.Hospid': 1,
             'parsed_data.procedures': 1,
-            'files.filename': 1
+            'files.filename': 1,
+            created_at: 1
           }
         }
       )
       .sort({ created_at: -1 })
       .toArray();
+
+    // Deduplicate jobs by filename ONLY for UTTAR PARDESH
+    // Preference is given to 'completed' status
+    const uniqueJobsMap = new Map<string, any>();
+    jobs.forEach((job) => {
+      const isUP = job.state && job.state.trim().toLowerCase() === 'uttar pardesh';
+      let key = job._id.toString();
+      
+      if (isUP && job.files && job.files.length > 0) {
+        key = job.files[0].filename;
+      }
+      
+      if (!uniqueJobsMap.has(key)) {
+        uniqueJobsMap.set(key, job);
+      } else {
+        const existing = uniqueJobsMap.get(key);
+        if (job.status === 'completed' && existing.status !== 'completed') {
+          uniqueJobsMap.set(key, job);
+        }
+      }
+    });
+    jobs = Array.from(uniqueJobsMap.values());
 
     // Group jobs by state, then by city
     const statesMap = new Map<

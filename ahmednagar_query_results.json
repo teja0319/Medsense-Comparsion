@@ -1,0 +1,464 @@
+[
+  {
+    "_id": "69ba8781c214fdfde1cfced0",
+    "filename": "Ahmednagar Apex Multispeciality Hospital-35517.pdf",
+    "hospName": "Apex Multispeciality Hospital",
+    "hospId": "AMG635",
+    "proceduresCount": 136
+  },
+  {
+    "_id": "69ba8784c214fdfde1cfced3",
+    "filename": "Akshay Childrens Hospital & Maternity Home-47660.pdf",
+    "hospName": "Akshay Children's Hospital & Maternity Home",
+    "hospId": "414003",
+    "proceduresCount": 98
+  },
+  {
+    "_id": "69ba8786c214fdfde1cfced6",
+    "filename": "Anand Hospital And Critical Care Unit And Dental Clinic-31371.pdf",
+    "hospName": "Anand Hospital And Critical Care Unit And Dental Clinic",
+    "hospId": "rasht",
+    "proceduresCount": 139
+  },
+  {
+    "_id": "69ba8788c214fdfde1cfced9",
+    "filename": "Arunoday Superspeciality Hospital-32667.pdf",
+    "hospName": "Arunoday Hospital",
+    "hospId": "",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba878bc214fdfde1cfcedc",
+    "filename": "Asian Noble Hospitals Pvt Ltd-12511.pdf",
+    "hospName": "Asian Noble Hospital Pvt. Ltd.",
+    "hospId": "00565",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba878dc214fdfde1cfcedf",
+    "filename": "Atma Malik Hospital-40632.pdf",
+    "hospName": "Atma Malik Hospital",
+    "hospId": "AH315",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba8790c214fdfde1cfcee2",
+    "filename": "Auti Multispeciality Hospital And Dental Clinic,Parner-46176.pdf",
+    "hospName": "Auti Multispeciality Hospital & Dental Clinic",
+    "hospId": "AH491",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba8792c214fdfde1cfcee5",
+    "filename": "Bade Multispeciality Hospital-36762.pdf",
+    "hospName": "Bade Multispeciality Hospital",
+    "hospId": "00346",
+    "proceduresCount": 106
+  },
+  {
+    "_id": "69ba8795c214fdfde1cfcee8",
+    "filename": "Balaji Paediatric And Dental Hospital-18205.pdf",
+    "hospName": "BALAJI HOSPITAL",
+    "hospId": "",
+    "proceduresCount": 139
+  },
+  {
+    "_id": "69ba8797c214fdfde1cfceeb",
+    "filename": "Bendre Hospital And Maternity Home-30016.pdf",
+    "hospName": "Bendre Hospital & Maternity Home",
+    "hospId": "31471",
+    "proceduresCount": 138
+  },
+  {
+    "_id": "69ba879ac214fdfde1cfceee",
+    "filename": "Bhairavnath Hospital-12685.pdf",
+    "hospName": "Bhairavnath Hospital",
+    "hospId": "dnagar",
+    "proceduresCount": 138
+  },
+  {
+    "_id": "69ba879cc214fdfde1cfcef1",
+    "filename": "Chaitanya Eye Hospital-25699.pdf",
+    "hospName": "Chaitanya Eye Hospital",
+    "hospId": "",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba879fc214fdfde1cfcef4",
+    "filename": "Chaitanya Hospital-12855.pdf",
+    "hospName": "CHAITANYA HOSPITAL",
+    "hospId": "98",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87a2c214fdfde1cfcef7",
+    "filename": "Chaitanyanath Hospital And Prasutigruh-30043.pdf",
+    "hospName": "Chaitanyananth Hospital",
+    "hospId": "61345",
+    "proceduresCount": 143
+  },
+  {
+    "_id": "69ba87a4c214fdfde1cfcefa",
+    "filename": "Datta Balrugnalaya And Multi Speciality Hospital-49482.pdf",
+    "hospName": "Datta Balrugnalaya and Multi speciality Hospital Jamkhed",
+    "hospId": "04134",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87a7c214fdfde1cfcefd",
+    "filename": "Dr Bhalsing Ortho Plus Hospital-36788.pdf",
+    "hospName": "Dr Bhalsing Orthoplus Hospital",
+    "hospId": "00729",
+    "proceduresCount": 139
+  },
+  {
+    "_id": "69ba87a9c214fdfde1cfcf00",
+    "filename": "Dr Gondkar Hospital & Maternity Home & IVF Center-37588.pdf",
+    "hospName": "Dr. Gondkar Hospital and Maternity Home and IVF Centre-Shirdi",
+    "hospId": "",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87acc214fdfde1cfcf03",
+    "filename": "Dr Shelke Accident And General Hospital-31360.pdf",
+    "hospName": "Dr. Shelke dent and general Hospital",
+    "hospId": "422605",
+    "proceduresCount": 129
+  },
+  {
+    "_id": "69ba87aec214fdfde1cfcf06",
+    "filename": "Dr Vikhe Patil Memorial Hospital-32666.pdf",
+    "hospName": "Dr. Vikhe Patil Memorial Hospital and College",
+    "hospId": "77099",
+    "proceduresCount": 65
+  },
+  {
+    "_id": "69ba87b1c214fdfde1cfcf09",
+    "filename": "Gajanan Hospital-13634.pdf",
+    "hospName": "Gajanan Hospital & Advanced Endoscopic ENT surgery centre",
+    "hospId": "00562",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87b3c214fdfde1cfcf0c",
+    "filename": "Gunjal Hospital-25728.pdf",
+    "hospName": "Gunjal Hospital",
+    "hospId": "52504",
+    "proceduresCount": 136
+  },
+  {
+    "_id": "69ba87b5c214fdfde1cfcf0f",
+    "filename": "Heartbeat Multispeciality Hospital And ICU-32376.pdf",
+    "hospName": "",
+    "hospId": "",
+    "proceduresCount": 127
+  },
+  {
+    "_id": "69ba87b7c214fdfde1cfcf12",
+    "filename": "Impulse Plus Hospital Pvt Ltd-32083.pdf",
+    "hospName": "Impulse Plus Hospital Pvt. Ltd.",
+    "hospId": "",
+    "proceduresCount": 135
+  },
+  {
+    "_id": "69ba87bac214fdfde1cfcf15",
+    "filename": "Kate Multispeciality Hospital-48149.pdf",
+    "hospName": "Kate Multispeciality Hospital",
+    "hospId": "",
+    "proceduresCount": 138
+  },
+  {
+    "_id": "69ba87bcc214fdfde1cfcf18",
+    "filename": "Khandelwal Children And Eye Hospital-14340.pdf",
+    "hospName": "Khandelwal Children And Eye Hospital",
+    "hospId": "00165",
+    "proceduresCount": 91
+  },
+  {
+    "_id": "69ba87bfc214fdfde1cfcf1b",
+    "filename": "Kulkarni Ent And Maternity Hospital-14427.pdf",
+    "hospName": "Kulkarni Ent And Maternity Hospital",
+    "hospId": "032023",
+    "proceduresCount": 70
+  },
+  {
+    "_id": "69ba87c1c214fdfde1cfcf1e",
+    "filename": "Kute Hospital And Laparoscopy Centre-14445.pdf",
+    "hospName": "Kute Hospital & Laparoscopy Centre",
+    "hospId": "22605",
+    "proceduresCount": 143
+  },
+  {
+    "_id": "69ba87c3c214fdfde1cfcf21",
+    "filename": "Life Line Superspeciality Hospital -47579.pdf",
+    "hospName": "Life line Super Speciality Hospital",
+    "hospId": "41001",
+    "proceduresCount": 136
+  },
+  {
+    "_id": "69ba87c6c214fdfde1cfcf24",
+    "filename": "Maccare Super Speciality Hospital Unit of Varad Multispeciality Hospital-21668.pdf",
+    "hospName": "MACCARE SUPER SPECIALITY HOSPITAL",
+    "hospId": "00676",
+    "proceduresCount": 0
+  },
+  {
+    "_id": "69ba87c9c214fdfde1cfcf27",
+    "filename": "Mandana Hospital-48346.pdf",
+    "hospName": "Mandana Hospital",
+    "hospId": "XXXXX",
+    "proceduresCount": 138
+  },
+  {
+    "_id": "69ba87cbc214fdfde1cfcf2a",
+    "filename": "Medicover Hospital Unit Of Sahrudaya Health Care Pvt Ltd-27277.pdf",
+    "hospName": "Medicover Hospitals",
+    "hospId": "00859",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba87cdc214fdfde1cfcf2d",
+    "filename": "Morya Multispeciality Hospital-36662.pdf",
+    "hospName": "Morya Hospital",
+    "hospId": "00740",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87d0c214fdfde1cfcf30",
+    "filename": "Neuron Plus Hospital-32632.pdf",
+    "hospName": "NEURON PLUS HOSPITAL",
+    "hospId": "",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87d2c214fdfde1cfcf33",
+    "filename": "New Medicare Hospital-47552.pdf",
+    "hospName": "New Medicare Hospital",
+    "hospId": "a095",
+    "proceduresCount": 0
+  },
+  {
+    "_id": "69ba87d5c214fdfde1cfcf36",
+    "filename": "Niramay Hospital-47346.pdf",
+    "hospName": "Niramay Hospital",
+    "hospId": "AH333",
+    "proceduresCount": 138
+  },
+  {
+    "_id": "69ba87d7c214fdfde1cfcf39",
+    "filename": "Nucleus Hospital-20875.pdf",
+    "hospName": "Nucleus Hospital & Research Centre",
+    "hospId": "nagar",
+    "proceduresCount": 138
+  },
+  {
+    "_id": "69ba87dac214fdfde1cfcf3c",
+    "filename": "Om Sai Childrens Hospital-48215.pdf",
+    "hospName": "OM SAI CHILDREN'S HOSPITAL & MATERNITY HOME",
+    "hospId": "",
+    "proceduresCount": 140
+  },
+  {
+    "_id": "69ba87dcc214fdfde1cfcf3f",
+    "filename": "Omkar Hospital And Maternity Home-32633.pdf",
+    "hospName": "Omkar Hospital And Maternity Home",
+    "hospId": "42526",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87dfc214fdfde1cfcf42",
+    "filename": "Pandit Hospital And Maternity-29565.pdf",
+    "hospName": "PUNE GIPSA PAN RATE",
+    "hospId": "",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba87e1c214fdfde1cfcf45",
+    "filename": "Prime Vision Super Specialty Eye Care-64119.pdf",
+    "hospName": "Prime Vision Super Speciality Eye Care",
+    "hospId": "",
+    "proceduresCount": 11
+  },
+  {
+    "_id": "69ba87e3c214fdfde1cfcf48",
+    "filename": "Rasal Hospital-15728.pdf",
+    "hospName": "Rasal Hospital",
+    "hospId": "88492",
+    "proceduresCount": 138
+  },
+  {
+    "_id": "69ba87e6c214fdfde1cfcf4b",
+    "filename": "Rasal Netralaya-32856.pdf",
+    "hospName": "Rasal Netralaya",
+    "hospId": "00691",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba87e8c214fdfde1cfcf4e",
+    "filename": "Sai Abhinav Multispeciality Hospital-40625.pdf",
+    "hospName": "",
+    "hospId": "",
+    "proceduresCount": 138
+  },
+  {
+    "_id": "69ba87eac214fdfde1cfcf51",
+    "filename": "Sai Krupa Clinic And Nursing Home-29579.pdf",
+    "hospName": "Sai Krupa Clinic & Nursing Home",
+    "hospId": "00192",
+    "proceduresCount": 27
+  },
+  {
+    "_id": "69ba87edc214fdfde1cfcf54",
+    "filename": "Sai Mauli Super Speciality Hospital-45653.pdf",
+    "hospName": "SAI MAULI SUPER SPECIALITY HOSPITAL",
+    "hospId": "",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87efc214fdfde1cfcf59",
+    "filename": "Saideep Healthcare & Research Private Limited-18637.pdf",
+    "hospName": "Saideep Healthcare & Research Pvt. Ltd.",
+    "hospId": "00685",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba87f1c214fdfde1cfcf5d",
+    "filename": "Sanap Hospital-27551.pdf",
+    "hospName": "Sanap Hospital",
+    "hospId": "socwi",
+    "proceduresCount": 135
+  },
+  {
+    "_id": "69ba87f4c214fdfde1cfcf60",
+    "filename": "Sanap Hospital-27552.pdf",
+    "hospName": "SANAP HOSPITAL",
+    "hospId": "00575",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba87f7c214fdfde1cfcf63",
+    "filename": "Sanjivani Hospital -47472.pdf",
+    "hospName": "Sanjivani Hospital",
+    "hospId": "43393",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87fac214fdfde1cfcf66",
+    "filename": "Satalkar Lotus Super Speciality Hospital-60817.pdf",
+    "hospName": "Satalkar Lotus Superspeciality Hospital",
+    "hospId": "00115",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba87fcc214fdfde1cfcf69",
+    "filename": "Satyam Hospital-32850.pdf",
+    "hospName": "SATYAM HOSPITAL SANGAMNER",
+    "hospId": "",
+    "proceduresCount": 140
+  },
+  {
+    "_id": "69ba87ffc214fdfde1cfcf6c",
+    "filename": "Shreedeep Hospital-26570.pdf",
+    "hospName": "SHREEDEEP HOSPITAL",
+    "hospId": "14001",
+    "proceduresCount": 143
+  },
+  {
+    "_id": "69ba8802c214fdfde1cfcf71",
+    "filename": "Shri Sai Chaitanya Hospital-31820.pdf",
+    "hospName": "SHRI SAICHAITANYA HOSPITAL",
+    "hospId": "",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba8804c214fdfde1cfcf78",
+    "filename": "Siddhivinayak Childrens Hospitals And Critical Care Centre-20789.pdf",
+    "hospName": "Siddhivinayak Childrens Hospital & Critical Care Centre",
+    "hospId": "XXXXX",
+    "proceduresCount": 137
+  },
+  {
+    "_id": "69ba8807c214fdfde1cfcf7b",
+    "filename": "Snehdeep Super Speciality And Gynaecare Hospital-30546.pdf",
+    "hospName": "Snedordeep Superspeciality Grynarcare",
+    "hospId": "14007",
+    "proceduresCount": 139
+  },
+  {
+    "_id": "69ba8809c214fdfde1cfcf7e",
+    "filename": "Sonambekar Hospital-32634.pdf",
+    "hospName": "Sonambekar Hospital",
+    "hospId": "00653",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba880cc214fdfde1cfcf82",
+    "filename": "Sunder Netralaya-16788.pdf",
+    "hospName": "Sunder Netralaya",
+    "hospId": "29405",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba8810c214fdfde1cfcf89",
+    "filename": "Surabhi Hospitals Pvt Ltd-20868.pdf",
+    "hospName": "Surabhi Hospitals Pvt.Ltd.",
+    "hospId": "22526",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba8813c214fdfde1cfcf8d",
+    "filename": "Swasthya Hospital And Medical Research Center-16902.pdf",
+    "hospName": "Swasthya Hospital Medical research Center",
+    "hospId": "",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba8815c214fdfde1cfcf90",
+    "filename": "Swastik Netralaya And Maternity Hospital-36856.pdf",
+    "hospName": "Swastik Netralay and Maternity Hospital",
+    "hospId": "00663",
+    "proceduresCount": 141
+  },
+  {
+    "_id": "69ba8817c214fdfde1cfcf93",
+    "filename": "Tarde Hospital-8899.pdf",
+    "hospName": "Tarde hospital",
+    "hospId": "72927",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba881bc214fdfde1cfcf9f",
+    "filename": "Thorat Superspeciality Eye Care-16990.pdf",
+    "hospName": "Thorat Superspeciality Eye Care",
+    "hospId": "Nagal",
+    "proceduresCount": 11
+  },
+  {
+    "_id": "69ba881fc214fdfde1cfcfaa",
+    "filename": "United City Hospital-26063.pdf",
+    "hospName": "UNITED CITY HOSPITAL",
+    "hospId": "XXXXX",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba8822c214fdfde1cfcfae",
+    "filename": "Wagholikar Kidney Hospital-46331.pdf",
+    "hospName": "WAGHOLIKAR KIDNEY HOSPITAL",
+    "hospId": "XXXXX",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba8825c214fdfde1cfcfb4",
+    "filename": "Zawar Hospital-47586.pdf",
+    "hospName": "Zawar Hospital",
+    "hospId": "00650",
+    "proceduresCount": 142
+  },
+  {
+    "_id": "69ba8829c214fdfde1cfcfbf",
+    "filename": "Zaware Patil Hospital And Nursing Home -43042.pdf",
+    "hospName": "Zaware Patil Hospital & Nursing Home",
+    "hospId": "XXXXX",
+    "proceduresCount": 137
+  }
+]

@@ -66,6 +66,7 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
     total: 0,
     pages: 0,
   });
+  const [goToPage, setGoToPage] = useState('');
 
   const fetchJobs = async () => {
     try {
@@ -90,7 +91,7 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
     // Auto-refresh every 10 seconds
     const interval = setInterval(fetchJobs, 10000);
     return () => clearInterval(interval);
-  }, [projectId, pagination.page]);
+  }, [projectId, pagination.page, pagination.limit]);
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -218,8 +219,26 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
       </div>
 
       {pagination.pages > 1 && (
-        <div className="flex justify-center">
-          <Pagination>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-4 px-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
+            <span>Rows per page:</span>
+            <select
+              className="bg-background border border-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              value={pagination.limit}
+              onChange={(e) => {
+                const newLimit = Number(e.target.value);
+                setPagination((prev) => ({ ...prev, limit: newLimit, page: 1 }));
+              }}
+            >
+              {[10, 20, 50, 100, 200, 500].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Pagination className="mx-0 flex-1 w-full justify-center">
             <PaginationContent>
               {pagination.page > 1 && (
                 <PaginationItem>
@@ -289,6 +308,28 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
               )}
             </PaginationContent>
           </Pagination>
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
+            <span>Go to page:</span>
+            <input
+              type="number"
+              min={1}
+              max={pagination.pages}
+              className="bg-background border border-border rounded w-16 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              value={goToPage}
+              onChange={(e) => setGoToPage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const p = Number(goToPage);
+                  if (p >= 1 && p <= pagination.pages) {
+                    setPagination((prev) => ({ ...prev, page: p }));
+                    setGoToPage('');
+                  }
+                }
+              }}
+            />
+            <span className="shrink-0 text-xs">/ {pagination.pages}</span>
+          </div>
         </div>
       )}
         </>

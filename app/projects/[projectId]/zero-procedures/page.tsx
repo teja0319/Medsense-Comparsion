@@ -1,11 +1,8 @@
-import Link from 'next/link';
 import { connectToDatabase } from '@/lib/mongodb';
 import { serializeDocument, serializeDocuments } from '@/lib/serialize';
 import { Sidebar } from '@/components/dashboard/sidebar';
 import { Header } from '@/components/dashboard/header';
-import { JobsTable } from '@/components/dashboard/jobs-table';
-import { Button } from '@/components/ui/button';
-import { MapPin, AlertTriangle } from 'lucide-react';
+import { ZeroProceduresList } from '@/components/dashboard/zero-procedures-list';
 
 interface Project {
   _id: string;
@@ -16,7 +13,7 @@ interface Project {
   created_at?: string;
 }
 
-export default async function ProjectPage({
+export default async function ZeroProceduresPage({
   params,
 }: {
   params: Promise<{ projectId: string }>;
@@ -30,19 +27,17 @@ export default async function ProjectPage({
     const { db } = await connectToDatabase();
     const projectsCollection = db.collection('projects');
 
-    // Fetch all projects for sidebar
     const rawProjects = await projectsCollection
       .find({})
       .sort({ created_at: -1 })
       .toArray();
-    
+
     projects = serializeDocuments(rawProjects) as Project[];
 
-    // Fetch current project
     const rawProject = await projectsCollection.findOne({
       project_id: projectId,
     });
-    
+
     currentProject = rawProject ? (serializeDocument(rawProject) as Project) : null;
 
     if (!currentProject) {
@@ -60,7 +55,8 @@ export default async function ProjectPage({
           title={currentProject?.project_name || 'Project'}
           breadcrumbs={[
             { label: 'Projects', href: '/' },
-            { label: currentProject?.project_name || 'Loading...' },
+            { label: currentProject?.project_name || 'Loading...', href: `/projects/${projectId}` },
+            { label: 'Zero Procedures' },
           ]}
         />
         <main className="flex-1 overflow-auto p-8">
@@ -69,35 +65,7 @@ export default async function ProjectPage({
               <p className="text-destructive font-medium">Error: {error}</p>
             </div>
           ) : (
-            <div>
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    {currentProject?.description && (
-                      <p className="text-muted-foreground">{currentProject.description}</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Link href={`/projects/${projectId}/cities`}>
-                      <Button variant="outline" className="gap-2">
-                        <MapPin className="h-4 w-4" />
-                        View by Cities
-                      </Button>
-                    </Link>
-                    <Link href={`/projects/${projectId}/zero-procedures`}>
-                      <Button variant="outline" className="gap-2 border-amber-500/30 text-amber-600 hover:bg-amber-500/10">
-                        <AlertTriangle className="h-4 w-4" />
-                        Zero Procedures
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Parsing Jobs</h2>
-                <JobsTable projectId={projectId} />
-              </div>
-            </div>
+            <ZeroProceduresList projectId={projectId} />
           )}
         </main>
       </div>

@@ -28,13 +28,13 @@ function calculateCrc32(data: Buffer): number {
 }
 
 // Simple ZIP creation with proper CRC-32
-function createZipBuffer(files: Array<{ name: string; data: string }>): Buffer {
+function createZipBuffer(files: Array<{ name: string; data: string | Buffer }>): Buffer {
   const fileBuffers: Buffer[] = [];
   const centralDirectory: Buffer[] = [];
   let offset = 0;
 
   files.forEach((file) => {
-    const buffer = Buffer.from(file.data, 'utf-8');
+    const buffer = Buffer.isBuffer(file.data) ? file.data : Buffer.from(file.data as string, 'utf-8');
     const filename = file.name;
     const filenameBytes = Buffer.from(filename, 'utf-8');
     const crc32 = calculateCrc32(buffer);
@@ -140,18 +140,41 @@ export async function GET(
       );
     }
 
+    // Deduplicate jobs to prevent double-downloads of identical filenames ONLY for UTTAR PARDESH
+    const uniqueJobsMap = new Map<string, any>();
+    jobs.forEach((job) => {
+      const isUP = job.state && job.state.trim().toLowerCase() === 'uttar pardesh';
+      let key = job._id.toString();
+      
+      if (isUP && job.files && job.files.length > 0) {
+        key = job.files[0].filename;
+      }
+      
+      if (!uniqueJobsMap.has(key)) {
+        uniqueJobsMap.set(key, job);
+      } else {
+        const existing = uniqueJobsMap.get(key);
+        if (job.status === 'completed' && existing.status !== 'completed') {
+          uniqueJobsMap.set(key, job);
+        }
+      }
+    });
+
+    const deduplicatedJobs = Array.from(uniqueJobsMap.values());
+    console.log(`Deduplicated to ${deduplicatedJobs.length} jobs for export`);
+
     // Build export data
     const folderState = stateParam.replace(/\s+/g, '_');
-    const filesToZip: Array<{ name: string; data: string }> = [];
+    const filesToZip: Array<{ name: string; data: string | Buffer }> = [];
 
     if (cityParam) {
       // Single city export
       const folderCity = cityParam.replace(/\s+/g, '_');
       const folderPath = `Extraction Of Hospital Data/${folderState}/${folderCity}`;
 
-      const proceduresRows = buildProceduresRows(jobs);
-      const termsRows = buildTermsRows(jobs);
-      const roomChargeRows = buildRoomChargeRows(jobs);
+      const proceduresRows = buildProceduresRows(deduplicatedJobs);
+      const termsRows = buildTermsRows(deduplicatedJobs);
+      const roomChargeRows = buildRoomChargeRows(deduplicatedJobs);
 
       filesToZip.push(
         { name: `${folderPath}/procedures.xls`, data: convertToExcelHtml(proceduresRows) },
@@ -162,7 +185,7 @@ export async function GET(
       // State-level export: Group by city and create folders for each
       const jobsByCity: Record<string, any[]> = {};
       
-      jobs.forEach(job => {
+      deduplicatedJobs.forEach(job => {
         const city = job.city?.trim() || 'Unknown_City';
         if (!jobsByCity[city]) {
           jobsByCity[city] = [];
