@@ -26,6 +26,7 @@ import {
   Zap,
   ArrowDownToLine,
 } from 'lucide-react';
+import { ZipProcessor } from './zip-processor';
 
 // ─── Interfaces ────────────────────────────────────────────────
 interface ActiveItem {
@@ -202,6 +203,7 @@ export function AdminDashboard() {
   const [usersList, setUsersList] = useState<Array<{ userId: string; email: string }>>([]);
 
   // Upload state
+  const [uploadType, setUploadType] = useState<'single' | 'zip'>('single');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadHistory, setUploadHistory] = useState<Array<{ name: string; size: number; status: string; time: string }>>([]);
@@ -1084,164 +1086,194 @@ export function AdminDashboard() {
             </div>
           </div>
 
-          {/* Upload Area */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6">
-              {/* Drop Zone */}
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOver(false);
-                  const file = e.dataTransfer.files[0];
-                  if (file) handleFileSelect(file);
-                }}
-                onClick={() => fileInputRef.current?.click()}
-                className={`relative border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-300 ${
-                  dragOver
-                    ? 'border-violet-400 bg-violet-50 scale-[1.01]'
-                    : selectedFile
-                    ? 'border-emerald-300 bg-emerald-50/50'
-                    : 'border-slate-200 bg-slate-50/50 hover:border-violet-300 hover:bg-violet-50/30'
-                }`}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileSelect(file);
-                  }}
-                />
+          {/* Upload Type Selector */}
+          <div className="flex bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
+            <button
+              onClick={() => setUploadType('single')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                uploadType === 'single'
+                  ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              Single PDF Claim
+            </button>
+            <button
+              onClick={() => setUploadType('zip')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                uploadType === 'zip'
+                  ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              ZIP Archive (Bulk)
+            </button>
+          </div>
 
-                {selectedFile ? (
-                  <div className="space-y-3">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto">
-                      <File className="w-7 h-7 text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">{selectedFile.name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {formatFileSize(selectedFile.size)} • PDF Document
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedFile(null);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
+          {uploadType === 'single' ? (
+            <>
+              {/* Upload Area */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6">
+                  {/* Drop Zone */}
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOver(true);
+                    }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOver(false);
+                      const file = e.dataTransfer.files[0];
+                      if (file) handleFileSelect(file);
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`relative border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-300 ${
+                      dragOver
+                        ? 'border-violet-400 bg-violet-50 scale-[1.01]'
+                        : selectedFile
+                        ? 'border-emerald-300 bg-emerald-50/50'
+                        : 'border-slate-200 bg-slate-50/50 hover:border-violet-300 hover:bg-violet-50/30'
+                    }`}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileSelect(file);
                       }}
-                      className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
-                    >
-                      <X className="w-3 h-3" /> Remove file
-                    </button>
+                    />
+
+                    {selectedFile ? (
+                      <div className="space-y-3">
+                        <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto">
+                          <File className="w-7 h-7 text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">{selectedFile.name}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {formatFileSize(selectedFile.size)} • PDF Document
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedFile(null);
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                          }}
+                          className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
+                        >
+                          <X className="w-3 h-3" /> Remove file
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto">
+                          <Upload className="w-7 h-7 text-violet-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-700">
+                            Drop PDF file here or <span className="text-violet-600">browse</span>
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1">
+                            Supports PDF format • Max 50MB
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto">
-                      <Upload className="w-7 h-7 text-violet-600" />
+
+                  {/* Upload Button */}
+                  <div className="mt-4 flex justify-end">
+                    <Button
+                      onClick={handleUpload}
+                      disabled={!selectedFile || uploading}
+                      className="h-10 px-6 gap-2 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-md shadow-violet-500/20 disabled:opacity-50"
+                    >
+                      {uploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                      {uploading ? 'Uploading...' : 'Upload & Process'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Upload History */}
+                {uploadHistory.length > 0 && (
+                  <div className="border-t border-slate-100">
+                    <div className="px-5 py-3 border-b border-slate-50">
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Upload History
+                      </h4>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-700">
-                        Drop PDF file here or <span className="text-violet-600">browse</span>
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Supports PDF format • Max 50MB
-                      </p>
+                    <div className="divide-y divide-slate-50">
+                      {uploadHistory.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="px-5 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                item.status === 'success'
+                                  ? 'bg-emerald-50'
+                                  : 'bg-red-50'
+                              }`}
+                            >
+                              {item.status === 'success' ? (
+                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                              ) : (
+                                <AlertTriangle className="w-4 h-4 text-red-500" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-800">{item.name}</p>
+                              <p className="text-[10px] text-slate-400">
+                                {formatFileSize(item.size)} • {timeAgo(item.time)}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge
+                            className={`text-[10px] ${
+                              item.status === 'success'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-red-50 text-red-700 border-red-200'
+                            }`}
+                          >
+                            {item.status === 'success' ? 'Uploaded' : 'Failed'}
+                          </Badge>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Upload Button */}
-              <div className="mt-4 flex justify-end">
-                <Button
-                  onClick={handleUpload}
-                  disabled={!selectedFile || uploading}
-                  className="h-10 px-6 gap-2 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-md shadow-violet-500/20 disabled:opacity-50"
-                >
-                  {uploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )}
-                  {uploading ? 'Uploading...' : 'Upload & Process'}
-                </Button>
-              </div>
-            </div>
-
-            {/* Upload History */}
-            {uploadHistory.length > 0 && (
-              <div className="border-t border-slate-100">
-                <div className="px-5 py-3 border-b border-slate-50">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Upload History
-                  </h4>
-                </div>
-                <div className="divide-y divide-slate-50">
-                  {uploadHistory.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="px-5 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            item.status === 'success'
-                              ? 'bg-emerald-50'
-                              : 'bg-red-50'
-                          }`}
-                        >
-                          {item.status === 'success' ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                          ) : (
-                            <AlertTriangle className="w-4 h-4 text-red-500" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-slate-800">{item.name}</p>
-                          <p className="text-[10px] text-slate-400">
-                            {formatFileSize(item.size)} • {timeAgo(item.time)}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge
-                        className={`text-[10px] ${
-                          item.status === 'success'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-red-50 text-red-700 border-red-200'
-                        }`}
-                      >
-                        {item.status === 'success' ? 'Uploaded' : 'Failed'}
-                      </Badge>
-                    </div>
-                  ))}
+              {/* API Info */}
+              <div className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 rounded-2xl">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+                    <Zap className="h-4 w-4 text-violet-600" />
+                  </div>
+                  <div className="text-xs text-violet-700 space-y-0.5">
+                    <p className="font-semibold text-violet-800">Processing Pipeline</p>
+                    <p className="text-violet-600">
+                      Uploaded PDFs are sent to the MedSense API → parsed → auto-assigned to available
+                      reviewers based on capacity
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* API Info */}
-          <div className="p-4 bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-100 rounded-2xl">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
-                <Zap className="h-4 w-4 text-violet-600" />
-              </div>
-              <div className="text-xs text-violet-700 space-y-0.5">
-                <p className="font-semibold text-violet-800">Processing Pipeline</p>
-                <p className="text-violet-600">
-                  Uploaded PDFs are sent to the MedSense API → parsed → auto-assigned to available
-                  reviewers based on capacity
-                </p>
-              </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <ZipProcessor />
+          )}
         </div>
       )}
     </div>

@@ -22,6 +22,25 @@ export async function POST(req: NextRequest) {
     const zip = new AdmZip(buffer);
     const zipEntries = zip.getEntries();
 
+    // Validate the total number of files in the ZIP (excluding directories and macOS metadata)
+    const allFiles = zipEntries.filter(
+      entry => !entry.isDirectory && !entry.entryName.includes("__MACOSX")
+    );
+
+    if (allFiles.length > 20) {
+      return NextResponse.json(
+        { error: `ZIP contains too many files (${allFiles.length}). The maximum limit is 20 files per ZIP upload.` },
+        { status: 400 }
+      );
+    }
+
+    if (allFiles.length === 0) {
+      return NextResponse.json(
+        { error: "No files found in the ZIP archive." },
+        { status: 400 }
+      );
+    }
+
     // sessionId is ONLY for local batch tracking (UI progress)
     const sessionId = crypto.randomUUID();
     let queuedCount = 0;
