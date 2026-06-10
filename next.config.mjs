@@ -1,11 +1,27 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
+  reactStrictMode: true,
+    swcMinify: true,
+    distDir: "build", //add this
+    output: "standalone", //add this
+  // Ensure proper React handling
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
   },
-  images: {
-    unoptimized: true,
+  // Allow API calls over HTTP in development only
+  headers: async () => {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+    ]
   },
 }
 
-export default nextConfig
+module.exports = nextConfig
