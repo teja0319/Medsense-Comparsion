@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PdfViewer } from '@/components/dashboard/pdf-viewer';
 import { AlertTriangle, Building2, MapPin, FileWarning, Search, Eye, X, ChevronLeft, ChevronRight, RotateCcw, Flag, MoreHorizontal, RefreshCcw, FileQuestion } from 'lucide-react';
 import {
@@ -399,11 +400,9 @@ export function ZeroProceduresList({ projectId }: ZeroProceduresListProps) {
 
   if (loading) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-6">
         {renderTabs()}
-        <div className="flex items-center justify-center py-12">
-          <Spinner />
-        </div>
+        <ZeroProceduresListSkeleton />
       </div>
     );
   }
@@ -683,5 +682,65 @@ function TabButton({ id, label, count, active, set, icon }: any) {
         {count}
       </span>
     </button>
+  );
+}
+
+function ZeroProceduresListSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Summary Banner Skeleton */}
+      <div className="rounded-lg border border-slate-200 bg-white p-5 space-y-2">
+        <Skeleton className="h-6 w-64 bg-slate-150" />
+        <Skeleton className="h-4 w-full max-w-md bg-slate-100" />
+      </div>
+
+      {/* Filters Skeleton */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Skeleton className="h-9 flex-1 min-w-[200px] max-w-md bg-slate-100 rounded-md" />
+        <Skeleton className="h-9 w-40 bg-slate-100 rounded-md" />
+        <Skeleton className="h-9 w-32 bg-slate-100 rounded-md" />
+      </div>
+
+      {/* Grouped List Skeletons */}
+      {[1, 2].map((stateIdx) => (
+        <div key={stateIdx} className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-5 bg-slate-200 rounded-full" />
+            <Skeleton className="h-6 w-32 bg-slate-150" />
+            <Skeleton className="h-5.5 w-16 bg-slate-100 rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 ml-4">
+            {[1, 2, 3].map((cityIdx) => (
+              <Card key={cityIdx} className="p-4 space-y-3">
+                <div className="flex items-center gap-2 border-b pb-2">
+                  <Skeleton className="h-4 w-4 bg-slate-200 rounded" />
+                  <Skeleton className="h-4 w-24 bg-slate-150" />
+                  <Skeleton className="h-5.5 w-8 ml-auto bg-slate-100 rounded-full" />
+                </div>
+                <div className="space-y-2">
+                  {[1, 2].map((itemIdx) => (
+                    <div key={itemIdx} className="rounded-md bg-slate-50/50 p-2.5 space-y-2 border">
+                      <div className="flex justify-between items-center">
+                        <Skeleton className="h-3.5 w-32 bg-slate-100" />
+                        <Skeleton className="h-4.5 w-12 bg-slate-100 rounded" />
+                      </div>
+                      <Skeleton className="h-3 w-5/6 bg-slate-100" />
+                      <div className="flex justify-between items-center pt-1">
+                        <Skeleton className="h-4.5 w-16 bg-slate-100 rounded" />
+                        <div className="flex gap-1">
+                          <Skeleton className="h-6 w-12 bg-slate-100 rounded" />
+                          <Skeleton className="h-6 w-12 bg-slate-100 rounded" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

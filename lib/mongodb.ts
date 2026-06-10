@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import { startScheduler } from './claimsService';
 
 let cachedClient: MongoClient | null = null;
 
@@ -16,6 +17,11 @@ export async function getMongoClient(): Promise<MongoClient> {
     const client = new MongoClient(uri);
     await client.connect();
     cachedClient = client;
+
+    // Start background auto-assignment scheduler
+    const db = client.db(process.env.MONGODB_DB_NAME || 'admin');
+    startScheduler(db);
+
     return client;
   } catch (error) {
     console.error('MongoDB connection failed:', error);

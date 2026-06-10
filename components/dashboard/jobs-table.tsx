@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ParsedData {
   State?: string;
@@ -104,11 +105,7 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
   };
 
   if (loading && jobs.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Spinner />
-      </div>
-    );
+    return <JobsTableSkeleton />;
   }
 
   if (error) {
@@ -334,6 +331,53 @@ export function JobsTable({ projectId, initialPage = 1 }: JobsTableProps) {
       )}
         </>
       )}
+    </div>
+  );
+}
+
+function JobsTableSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Status Summary Cards Skeletons */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 animate-pulse">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="bg-card border border-border rounded-xl p-4 shadow-sm space-y-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-4 h-4 bg-slate-100" />
+              <Skeleton className="h-3 w-16 bg-slate-100" />
+            </div>
+            <Skeleton className="h-7 w-12 bg-slate-150" />
+          </div>
+        ))}
+      </div>
+
+      {/* Table Skeleton */}
+      <div className="rounded-xl border bg-white overflow-hidden shadow-sm animate-pulse">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead><Skeleton className="h-4 w-24 bg-slate-200" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-32 bg-slate-200" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-16 bg-slate-200" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-12 bg-slate-200" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-20 bg-slate-200" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-20 bg-slate-200" /></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-4 w-32 bg-slate-100" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-48 bg-slate-100" /></TableCell>
+                <TableCell><Skeleton className="h-5.5 w-16 bg-slate-105 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-12 bg-slate-100" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-20 bg-slate-100" /></TableCell>
+                <TableCell><Skeleton className="h-8 w-20 bg-slate-100 rounded-lg" /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

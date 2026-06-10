@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ZoomIn, ZoomOut, Download, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
 
 interface PdfViewerProps {
@@ -142,9 +143,18 @@ export function PdfViewer({ pdfUrl, fileName = 'document.pdf' }: PdfViewerProps)
       {/* PDF Viewer */}
       <div className="flex-1 overflow-hidden relative bg-slate-100 dark:bg-slate-950">
         {loading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 z-10">
-            <Spinner className="w-8 h-8 mb-2" />
-            <p className="text-xs text-slate-600 dark:text-slate-400">Loading PDF...</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 z-10 p-6">
+            <div className="w-full max-w-md space-y-4 animate-pulse">
+              <div className="flex justify-center">
+                <Skeleton className="w-12 h-16 bg-slate-200 dark:bg-slate-800 rounded-md" />
+              </div>
+              <Skeleton className="h-4 w-1/2 mx-auto bg-slate-200 dark:bg-slate-800" />
+              <div className="space-y-2 pt-4">
+                <Skeleton className="h-3 w-full bg-slate-150 dark:bg-slate-850" />
+                <Skeleton className="h-3 w-5/6 bg-slate-150 dark:bg-slate-850" />
+                <Skeleton className="h-3 w-4/5 bg-slate-150 dark:bg-slate-850" />
+              </div>
+            </div>
           </div>
         )}
 
