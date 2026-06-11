@@ -64,10 +64,12 @@ export async function updateUserRole(
     { returnDocument: 'after' }
   );
 
-  if (!result || !result.value) return null;
+  if (!result) return null;
+  const doc = (result.value !== undefined ? result.value : result) as any;
+  if (!doc) return null;
   
-  const { password, ...userWithoutPassword } = (result.value as any) as User;
-  return { ...userWithoutPassword, _id: result.value._id.toString() };
+  const { password, ...userWithoutPassword } = doc;
+  return { ...userWithoutPassword, _id: doc._id.toString() };
 }
 
 export async function toggleUserActive(
@@ -84,10 +86,12 @@ export async function toggleUserActive(
     { returnDocument: 'after' }
   );
 
-  if (!result || !result.value) return null;
+  if (!result) return null;
+  const doc = (result.value !== undefined ? result.value : result) as any;
+  if (!doc) return null;
   
-  const { password, ...userWithoutPassword } = (result.value as any) as User;
-  return { ...userWithoutPassword, _id: result.value._id.toString() };
+  const { password, ...userWithoutPassword } = doc;
+  return { ...userWithoutPassword, _id: doc._id.toString() };
 }
 
 export async function getAllUsers(db: Db): Promise<UserWithoutPassword[]> {

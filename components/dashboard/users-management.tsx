@@ -88,6 +88,7 @@ export function UsersManagement() {
 
       if (!response.ok) throw new Error('Failed to update role');
       const data = await response.json();
+      if (!data?.user) throw new Error('Invalid user data returned');
 
       // Update local state
       setUsers(
@@ -126,6 +127,7 @@ export function UsersManagement() {
 
       if (!response.ok) throw new Error('Failed to toggle active');
       const data = await response.json();
+      if (!data?.user) throw new Error('Invalid user data returned');
 
       // Update local state
       setUsers(
@@ -250,67 +252,18 @@ export function UsersManagement() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
-                    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-[11px] px-2.5"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setNewRole(user.role);
-                          }}
-                        >
-                          Change Role
-                        </Button>
-                      </DialogTrigger>
-                      {selectedUser?._id === user._id && (
-                        <DialogContent className="sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle className="text-lg">Change User Role</DialogTitle>
-                            <DialogDescription className="text-sm">
-                              Update the role for <span className="font-medium text-slate-700">{user.email}</span>
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 pt-2">
-                            <Select
-                              value={newRole}
-                              onValueChange={(value) =>
-                                setNewRole(value as 'superadmin' | 'user')
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="user">👤 User</SelectItem>
-                                <SelectItem value="superadmin">⚡ Superadmin</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setOpenDialog(false)}
-                                disabled={updatingRole}
-                              >
-                                Cancel
-                              </Button>
-                              <Button size="sm" onClick={handleUpdateRole} disabled={updatingRole}>
-                                {updatingRole ? (
-                                  <>
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                                    Updating...
-                                  </>
-                                ) : (
-                                  'Update Role'
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      )}
-                    </Dialog>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[11px] px-2.5"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setNewRole(user.role);
+                        setOpenDialog(true);
+                      }}
+                    >
+                      Change Role
+                    </Button>
                     <Button
                       size="sm"
                       variant={user.isActive ? 'destructive' : 'default'}
@@ -339,6 +292,60 @@ export function UsersManagement() {
           </div>
         )}
       </div>
+
+      {/* Change Role Dialog */}
+      <Dialog open={openDialog} onOpenChange={(open) => {
+        setOpenDialog(open);
+        if (!open) setSelectedUser(null);
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg">Change User Role</DialogTitle>
+            <DialogDescription className="text-sm">
+              Update the role for <span className="font-medium text-slate-700">{selectedUser?.email}</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <Select
+              value={newRole}
+              onValueChange={(value) =>
+                setNewRole(value as 'superadmin' | 'user')
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">👤 User</SelectItem>
+                <SelectItem value="superadmin">⚡ Superadmin</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setOpenDialog(false);
+                  setSelectedUser(null);
+                }}
+                disabled={updatingRole}
+              >
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleUpdateRole} disabled={updatingRole}>
+                {updatingRole ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                    Updating...
+                  </>
+                ) : (
+                  'Update Role'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

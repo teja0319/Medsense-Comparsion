@@ -86,26 +86,26 @@ export function ProjectSidebar({ activeTab, onTabChange, userEmail, projectId, u
               className={cn(
                 'w-full flex items-start gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-200',
                 activeTab === 'users'
-                  ? 'bg-green-100 border-l-4 border-green-500 shadow-sm'
+                  ? 'bg-blue-100 border-l-4 border-blue-500 shadow-sm'
                   : 'hover:bg-slate-200/50 border-l-4 border-transparent'
               )}
             >
               <UserPlus
                 className={cn(
                   'h-5 w-5 mt-0.5 flex-shrink-0',
-                  activeTab === 'users' ? 'text-green-600' : 'text-slate-400'
+                  activeTab === 'users' ? 'text-blue-600' : 'text-slate-400'
                 )}
               />
               <div className="text-left">
                 <p
                   className={cn(
                     'font-semibold text-sm',
-                    activeTab === 'users' ? 'text-green-900' : 'text-slate-700'
+                    activeTab === 'users' ? 'text-blue-900' : 'text-slate-700'
                   )}
                 >
                   Add Users
                 </p>
-                <p className={cn('text-[11px]', activeTab === 'users' ? 'text-green-700' : 'text-slate-500')}>
+                <p className={cn('text-[11px]', activeTab === 'users' ? 'text-blue-700' : 'text-slate-500')}>
                   Create new accounts
                 </p>
               </div>
@@ -116,26 +116,26 @@ export function ProjectSidebar({ activeTab, onTabChange, userEmail, projectId, u
               className={cn(
                 'w-full flex items-start gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-200',
                 activeTab === 'users-mgmt'
-                  ? 'bg-indigo-100 border-l-4 border-indigo-500 shadow-sm'
+                  ? 'bg-blue-100 border-l-4 border-blue-500 shadow-sm'
                   : 'hover:bg-slate-200/50 border-l-4 border-transparent'
               )}
             >
               <Users
                 className={cn(
                   'h-5 w-5 mt-0.5 flex-shrink-0',
-                  activeTab === 'users-mgmt' ? 'text-indigo-600' : 'text-slate-400'
+                  activeTab === 'users-mgmt' ? 'text-blue-600' : 'text-slate-400'
                 )}
               />
               <div className="text-left">
                 <p
                   className={cn(
                     'font-semibold text-sm',
-                    activeTab === 'users-mgmt' ? 'text-indigo-900' : 'text-slate-700'
+                    activeTab === 'users-mgmt' ? 'text-blue-900' : 'text-slate-700'
                   )}
                 >
                   Users Management
                 </p>
-                <p className={cn('text-[11px]', activeTab === 'users-mgmt' ? 'text-indigo-700' : 'text-slate-500')}>
+                <p className={cn('text-[11px]', activeTab === 'users-mgmt' ? 'text-blue-700' : 'text-slate-500')}>
                   Roles & status
                 </p>
               </div>
@@ -146,26 +146,26 @@ export function ProjectSidebar({ activeTab, onTabChange, userEmail, projectId, u
               className={cn(
                 'w-full flex items-start gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-200',
                 activeTab === 'claims-auto'
-                  ? 'bg-amber-100 border-l-4 border-amber-500 shadow-sm'
+                  ? 'bg-blue-100 border-l-4 border-blue-500 shadow-sm'
                   : 'hover:bg-slate-200/50 border-l-4 border-transparent'
               )}
             >
               <Zap
                 className={cn(
                   'h-5 w-5 mt-0.5 flex-shrink-0',
-                  activeTab === 'claims-auto' ? 'text-amber-600' : 'text-slate-400'
+                  activeTab === 'claims-auto' ? 'text-blue-600' : 'text-slate-400'
                 )}
               />
               <div className="text-left">
                 <p
                   className={cn(
                     'font-semibold text-sm',
-                    activeTab === 'claims-auto' ? 'text-amber-900' : 'text-slate-700'
+                    activeTab === 'claims-auto' ? 'text-blue-900' : 'text-slate-700'
                   )}
                 >
                   Claims Auto Assignment
                 </p>
-                <p className={cn('text-[11px]', activeTab === 'claims-auto' ? 'text-amber-700' : 'text-slate-500')}>
+                <p className={cn('text-[11px]', activeTab === 'claims-auto' ? 'text-blue-700' : 'text-slate-500')}>
                   Configure limits & load
                 </p>
               </div>
@@ -206,26 +206,26 @@ export function ProjectSidebar({ activeTab, onTabChange, userEmail, projectId, u
               className={cn(
                 'w-full flex items-start gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-200',
                 activeTab === 'user-analytics'
-                  ? 'bg-violet-105 border-l-4 border-violet-500 shadow-sm'
+                  ? 'bg-blue-100 border-l-4 border-blue-500 shadow-sm'
                   : 'hover:bg-slate-200/50 border-l-4 border-transparent'
               )}
             >
               <BarChart3
                 className={cn(
                   'h-5 w-5 mt-0.5 flex-shrink-0',
-                  activeTab === 'user-analytics' ? 'text-violet-600' : 'text-slate-400'
+                  activeTab === 'user-analytics' ? 'text-blue-600' : 'text-slate-400'
                 )}
               />
               <div className="text-left">
                 <p
                   className={cn(
                     'font-semibold text-sm',
-                    activeTab === 'user-analytics' ? 'text-violet-900' : 'text-slate-700'
+                    activeTab === 'user-analytics' ? 'text-blue-900' : 'text-slate-700'
                   )}
                 >
                   User Analytics
                 </p>
-                <p className={cn('text-[11px]', activeTab === 'user-analytics' ? 'text-violet-750' : 'text-slate-500')}>
+                <p className={cn('text-[11px]', activeTab === 'user-analytics' ? 'text-blue-700' : 'text-slate-500')}>
                   Reviewer performance metrics
                 </p>
               </div>

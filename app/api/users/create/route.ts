@@ -30,6 +30,20 @@ export async function POST(req: Request) {
       );
     }
 
+    // Enforce strong password validation
+    const hasMinLength = password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!hasMinLength || !hasUppercase || !hasLowercase || !hasDigit || !hasSpecial) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.' },
+        { status: 400 }
+      );
+    }
+
     if (!['user', 'superadmin'].includes(role)) {
       return NextResponse.json(
         { error: 'Invalid role' },

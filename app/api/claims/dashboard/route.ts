@@ -39,6 +39,18 @@ export async function GET(req: Request) {
 
     const { ObjectId } = require('mongodb');
 
+    const getClaimNumber = (job: any) => {
+      const parsedNo = job?.parsed_data?.claim_details?.claim_number;
+      if (parsedNo && parsedNo !== '—' && parsedNo !== 'N/A') {
+        return parsedNo;
+      }
+      const filename = job?.files?.[0]?.filename;
+      if (filename) {
+        return filename.replace(/\.pdf$/i, '').replace(/\s*\(\d+\)\s*$/, '');
+      }
+      return '—';
+    };
+
     // Helper to resolve job + user details
     const resolveDetails = async (items: any[], type: 'assignment' | 'queue') => {
       const jobIds = items.map(i => i.claimId);
@@ -90,7 +102,7 @@ export async function GET(req: Request) {
         return {
           claimId: a.claimId,
           projectId: job?.project_id || '—',
-          claimNumber: job?.parsed_data?.claim_details?.claim_number || '—',
+          claimNumber: getClaimNumber(job),
           insuredName: job?.parsed_data?.insured_person_details?.name || '—',
           assignedTo: usr?.email || a.userId,
           assignedAt: a.assignedAt,
@@ -132,7 +144,7 @@ export async function GET(req: Request) {
         return {
           claimId: q.claimId,
           projectId: job?.project_id || '—',
-          claimNumber: job?.parsed_data?.claim_details?.claim_number || '—',
+          claimNumber: getClaimNumber(job),
           insuredName: job?.parsed_data?.insured_person_details?.name || '—',
           createdAt: q.createdAt,
         };
@@ -191,7 +203,7 @@ export async function GET(req: Request) {
         return {
           claimId: a.claimId,
           projectId: job?.project_id || '—',
-          claimNumber: job?.parsed_data?.claim_details?.claim_number || '—',
+          claimNumber: getClaimNumber(job),
           insuredName: job?.parsed_data?.insured_person_details?.name || '—',
           reviewedBy: usr?.email || a.userId,
           completedAt: a.completedAt,
