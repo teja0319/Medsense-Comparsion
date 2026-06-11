@@ -108,8 +108,8 @@ export async function assignClaimToUser(
   const userLoad = await getUserClaimsLoad(db, userId);
   const userLimit = await getUserClaimLimit(db, userId);
 
-  // Check if user has capacity and has cleared all existing claims (0 active)
-  if (userLoad.assignedClaimsCount === 0 && userLoad.assignedClaimsCount < userLimit) {
+  // Check if user has capacity
+  if (userLoad.assignedClaimsCount < userLimit) {
     // Assign directly to user
     await assignmentsCollection.insertOne({
       claimId,
@@ -150,19 +150,7 @@ export async function assignClaimsToUser(
   const userLimit = await getUserClaimLimit(db, userId);
   let currentLoad = userLoad.assignedClaimsCount;
 
-  // Rule: Only assign new claims if the user has 0 active claims
-  if (currentLoad > 0) {
-    // Queue all claimIds
-    for (const claimId of claimIds) {
-      const assignmentsCollection = db.collection('claim_assignments');
-      const existing = await assignmentsCollection.findOne({ claimId });
-      if (existing) continue;
-
-      await addClaimToQueue(db, claimId);
-      queued.push(claimId);
-    }
-    return { assigned, queued };
-  }
+  // Remove the restriction that user must have 0 active claims
 
   const assignmentsCollection = db.collection('claim_assignments');
 
@@ -284,14 +272,13 @@ export async function processClaimQueue(db: Db, forceFill = false): Promise<void
     .find({ isActive: true, role: 'user' })
     .toArray();
 
-  // Fetch initial loads and limits once to avoid heavy loop database queries
-  const userLoads = new Map<string, { initialCount: number; currentCount: number; limit: number }>();
+  // Fetch loads and limits once to avoid heavy loop database queries
+  const userLoads = new Map<string, { currentCount: number; limit: number }>();
   for (const user of activeUsers) {
     const userId = user._id.toString();
     const assignedCount = await getAssignedClaimsCount(db, userId);
     const claimLimit = await getUserClaimLimit(db, userId);
     userLoads.set(userId, {
-      initialCount: assignedCount,
       currentCount: assignedCount,
       limit: claimLimit,
     });
@@ -304,13 +291,12 @@ export async function processClaimQueue(db: Db, forceFill = false): Promise<void
     .toArray();
 
   for (const queuedClaim of queuedClaims) {
-    // Find user with lowest current claims count who has capacity (and matches eligibility rule)
+    // Find user with lowest current claims count who has capacity
     let assignedUserId = null;
     let minCurrentCount = Infinity;
 
     for (const [userId, load] of userLoads.entries()) {
-      const isEligible = forceFill || load.initialCount === 0;
-      if (isEligible && load.currentCount < load.limit && load.currentCount < minCurrentCount) {
+      if (load.currentCount < load.limit && load.currentCount < minCurrentCount) {
         assignedUserId = userId;
         minCurrentCount = load.currentCount;
       }
@@ -335,7 +321,7 @@ export async function processClaimQueue(db: Db, forceFill = false): Promise<void
       const load = userLoads.get(assignedUserId)!;
       load.currentCount++;
     } else {
-      // No users with initialCount === 0 have remaining capacity, break
+      // All users are at capacity, break
       break;
     }
   }

@@ -63,10 +63,11 @@ class RateLimitedQueue {
             const reportId = apiResponse.report_id;
             
             console.log(`[Queue] Success! External Job ID: ${externalJobId}`);
-            console.log(`[Queue] Now updating parsing_jobs with state=${task.statename}, city=${task.cityname}`);
-
-            // Step 1: Update the EXISTING record in parsing_jobs using _id = job_id
-            await updateParsingJobWithLocation(externalJobId, task.statename, task.cityname);
+            if (task.statename && task.cityname) {
+              console.log(`[Queue] Now updating parsing_jobs with state=${task.statename}, city=${task.cityname}`);
+              // Step 1: Update the EXISTING record in parsing_jobs using _id = job_id
+              await updateParsingJobWithLocation(externalJobId, task.statename, task.cityname);
+            }
 
             // Step 2: Update our local tracking record
             await updateJobMetadataStatus(task.sessionId, task.filename, 'success', undefined, externalJobId, reportId);

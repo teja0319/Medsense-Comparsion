@@ -6,7 +6,7 @@ export async function sendFileToExternalApi(buffer: Buffer, filename: string, we
   const blob = new Blob([new Uint8Array(buffer)], { type: 'application/pdf' });
   formData.append('file', blob, filename);
 
-  const targetUrl = new URL('https://medsensedev-c5fbg8htfbhtgqck.centralindia-01.azurewebsites.net/api/v1/tenants/dev-testing-db64/projects/5e19dae4-46fe-42ba-981e-bd0a3a451f8e/reports');
+  const targetUrl = new URL('https://medsensedev-c5fbg8htfbhtgqck.centralindia-01.azurewebsites.net/api/v1/tenants/dev-testing-db64/projects/857d529e-75cf-4210-bea3-ca023a15ed1d/reports');
   targetUrl.searchParams.append('webhook_url', webhookUrl);
 
   const response = await fetch(targetUrl.toString(), {

@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     // Validate the total number of files in the ZIP (excluding directories and macOS metadata)
     const allFiles = zipEntries.filter(
-      entry => !entry.isDirectory && !entry.entryName.includes("__MACOSX")
+      entry => !entry.isDirectory && !entry.entryName.replace(/\\/g, "/").includes("__MACOSX")
     );
 
     if (allFiles.length > 20) {
@@ -48,28 +48,27 @@ export async function POST(req: NextRequest) {
     console.log(`[Upload] Session: ${sessionId}, ZIP entries: ${zipEntries.length}`);
 
     for (const zipEntry of zipEntries) {
+      const entryNameNormalized = zipEntry.entryName.replace(/\\/g, "/");
       if (
         !zipEntry.isDirectory &&
-        zipEntry.entryName.toLowerCase().endsWith(".pdf") &&
-        !zipEntry.entryName.includes("__MACOSX")
+        entryNameNormalized.toLowerCase().endsWith(".pdf") &&
+        !entryNameNormalized.includes("__MACOSX")
       ) {
-        // Expected structure: State/City/filename.pdf
-        const parts = zipEntry.entryName.split("/").filter(p => p.length > 0);
+        // Extract filename from the zip entry path
+        const parts = entryNameNormalized.split("/").filter(p => p.length > 0);
         
-        if (parts.length >= 2) {
+        if (parts.length >= 1) {
           const filename = parts[parts.length - 1];
-          const city = parts.length >= 2 ? parts[parts.length - 2] : "Unknown City";
-          const state = parts.length >= 3 ? parts[parts.length - 3] : "Unknown State";
           
-          console.log(`[Upload] Found: ${state}/${city}/${filename}`);
+          console.log(`[Upload] Found: ${filename}`);
           
           const fileBuffer = zipEntry.getData();
           
-          // Create local tracking record
+          // Create local tracking record (statename and cityname are not related to claims)
           await createJobMetadata({
             sessionId,
-            statename: state,
-            cityname: city,
+            statename: "",
+            cityname: "",
             filename,
             status: "pending",
           });
@@ -79,8 +78,8 @@ export async function POST(req: NextRequest) {
             sessionId,
             buffer: fileBuffer,
             filename,
-            statename: state,
-            cityname: city,
+            statename: "",
+            cityname: "",
             webhookUrl
           });
 

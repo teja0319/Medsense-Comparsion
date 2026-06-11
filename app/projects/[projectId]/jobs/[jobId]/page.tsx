@@ -205,9 +205,18 @@ export default function JobComparisonPage() {
       const keys = path.split('.');
       let current = updated;
       for (let i = 0; i < keys.length - 1; i++) {
-        if (!current[keys[i]]) current[keys[i]] = {};
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
+        const key = keys[i];
+        const nextKey = keys[i + 1];
+        const isNextKeyIndex = !isNaN(Number(nextKey));
+
+        if (!current[key]) {
+          current[key] = isNextKeyIndex ? [] : {};
+        } else if (Array.isArray(current[key])) {
+          current[key] = [ ...current[key] ];
+        } else {
+          current[key] = { ...current[key] };
+        }
+        current = current[key];
       }
       current[keys[keys.length - 1]] = value;
 
@@ -681,13 +690,13 @@ export default function JobComparisonPage() {
                 )}
 
                 {/* Medicines sub-section (array of invoice objects, each with nested items) */}
-                {Array.isArray(value.medicines) && (
+                {(Array.isArray(value.medicines) || isEditing) && (
                   <div className="space-y-4 border-t border-slate-100 pt-4">
                     <span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest block">
-                      Medicines ({value.medicines.length} invoice{value.medicines.length !== 1 ? 's' : ''})
+                      Medicines ({value.medicines?.length || 0} invoice{value.medicines?.length !== 1 ? 's' : ''})
                     </span>
                     <div className="space-y-6 divide-y divide-slate-100">
-                      {value.medicines.map((invoice: any, invIdx: number) => {
+                      {(Array.isArray(value.medicines) ? value.medicines : []).map((invoice: any, invIdx: number) => {
                         const invPath = `${currentPath}.medicines.${invIdx}`;
                         // Get top-level invoice fields (skip the nested items array)
                         const invoiceFields = flattenObject(
@@ -707,6 +716,20 @@ export default function JobComparisonPage() {
                                   Medicine Invoice #{invIdx + 1}
                                 </span>
                               </div>
+                              {isEditing && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="h-8 text-xs gap-1.5 bg-rose-50 text-rose-650 hover:bg-rose-100 border border-rose-200"
+                                  onClick={() => {
+                                    const updatedArr = value.medicines.filter((_: any, i: number) => i !== invIdx);
+                                    handleFormChange(`${currentPath}.medicines`, updatedArr);
+                                  }}
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                  Remove Invoice
+                                </Button>
+                              )}
                             </div>
                             
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 w-full px-1">
@@ -714,31 +737,84 @@ export default function JobComparisonPage() {
                             </div>
 
                             {/* Nested medicine items */}
-                            {Array.isArray(invoice.items) && invoice.items.length > 0 && (
+                            {(Array.isArray(invoice.items) || isEditing) && (
                               <div className="space-y-4 pt-2.5">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Billed Medicines Items ({invoice.items.length})</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Billed Medicines Items ({invoice.items?.length || 0})</span>
                                 <div className="space-y-4 divide-y divide-slate-100/70 pl-4 border-l border-slate-200">
-                                  {invoice.items.map((subItem: any, subIdx: number) => {
+                                  {(Array.isArray(invoice.items) ? invoice.items : []).map((subItem: any, subIdx: number) => {
                                     const subItemPath = `${invPath}.items.${subIdx}`;
                                     const subFlat = flattenObject(subItem, '', subItemPath);
                                     
                                     return (
                                       <div key={subItemPath} className="pt-4 first:pt-0 space-y-2.5">
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase select-none">
-                                          Item #{subIdx + 1}
-                                        </span>
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-[9px] font-bold text-slate-400 uppercase select-none">
+                                            Item #{subIdx + 1}
+                                          </span>
+                                          {isEditing && (
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1 h-6 w-16 text-[10px]"
+                                              onClick={() => {
+                                                const updatedItems = invoice.items.filter((_: any, i: number) => i !== subIdx);
+                                                handleFormChange(`${invPath}.items`, updatedItems);
+                                              }}
+                                            >
+                                              Remove Item
+                                            </Button>
+                                          )}
+                                        </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 w-full">
                                           {subFlat.map((sf) => renderField(sf.key, sf.value, sf.path))}
                                         </div>
                                       </div>
                                     );
                                   })}
+                                  {isEditing && (
+                                    <div className="pt-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 text-[10px] gap-1 text-slate-500 border-slate-250 hover:bg-slate-50"
+                                        onClick={() => {
+                                          const currentItems = Array.isArray(invoice.items) ? invoice.items : [];
+                                          const newItem = currentItems.length > 0 ? Object.fromEntries(Object.keys(currentItems[0]).map(k => [k, ''])) : { name: '', quantity: 1, amount: 0 };
+                                          handleFormChange(`${invPath}.items`, [...currentItems, newItem]);
+                                        }}
+                                      >
+                                        + Add Item
+                                      </Button>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}
                           </div>
                         );
                       })}
+                      {isEditing && (
+                        <div className="pt-4 flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-9 text-xs gap-1.5 text-violet-600 border-violet-200 hover:bg-violet-50"
+                            onClick={() => {
+                              const currentMedicines = Array.isArray(value.medicines) ? value.medicines : [];
+                              const newInvoice = {
+                                invoice_number: '',
+                                date: '',
+                                pharmacy_name: '',
+                                total_amount: 0,
+                                items: []
+                              };
+                              handleFormChange(`${currentPath}.medicines`, [...currentMedicines, newInvoice]);
+                            }}
+                          >
+                            + Add Medicine Invoice
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -790,7 +866,7 @@ export default function JobComparisonPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 w-full">
                   {scalarFields.map((f) => renderField(f.key, f.value, f.path))}
                 </div>
-                {evidenceArr.length > 0 && (
+                {(evidenceArr.length > 0 || isEditing) && (
                   <div className="space-y-2 pt-3 border-t border-slate-100 mt-3">
                     <span className="text-[10px] font-bold text-teal-500 uppercase tracking-widest block">Evidence ({evidenceArr.length})</span>
                     <div className="space-y-1.5">
@@ -798,21 +874,49 @@ export default function JobComparisonPage() {
                         <div key={idx} className="flex items-start gap-2.5 text-slate-700 text-sm font-medium leading-relaxed">
                           <span className="text-teal-400 font-sans select-none font-bold">•</span>
                           {isEditing ? (
-                            <input
-                              type="text"
-                              className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-250/20 transition-all bg-white shadow-3xs"
-                              value={item}
-                              onChange={(e) => {
-                                const updatedArr = [...evidenceArr];
-                                updatedArr[idx] = e.target.value;
-                                handleFormChange(`${currentPath}.evidence`, updatedArr);
-                              }}
-                            />
+                            <div className="flex-1 flex items-center gap-2">
+                              <input
+                                type="text"
+                                className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-250/20 transition-all bg-white shadow-3xs"
+                                value={item}
+                                onChange={(e) => {
+                                  const updatedArr = [...evidenceArr];
+                                  updatedArr[idx] = e.target.value;
+                                  handleFormChange(`${currentPath}.evidence`, updatedArr);
+                                }}
+                              />
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-rose-500 hover:text-rose-750 hover:bg-rose-50 p-1.5 h-8 w-8 shrink-0"
+                                onClick={() => {
+                                  const updatedArr = evidenceArr.filter((_: any, i: number) => i !== idx);
+                                  handleFormChange(`${currentPath}.evidence`, updatedArr);
+                                }}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
                           ) : (
                             <span className="break-words select-all">{String(item)}</span>
                           )}
                         </div>
                       ))}
+                      {isEditing && (
+                        <div className="pt-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs gap-1 text-teal-650 border-teal-200 hover:bg-teal-50"
+                            onClick={() => {
+                              const updatedArr = [...evidenceArr, ''];
+                              handleFormChange(`${currentPath}.evidence`, updatedArr);
+                            }}
+                          >
+                            + Add Evidence
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -877,7 +981,32 @@ export default function JobComparisonPage() {
             {!isCollapsed && (
               <>
                 {value.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">No entries available.</p>
+                  <div className="space-y-4 p-4 bg-slate-50/20 rounded-xl border border-dashed border-slate-200">
+                    <p className="text-xs text-slate-400 italic">No entries available.</p>
+                    {isEditing && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-9 text-xs gap-1.5 text-blue-605 border-blue-200 hover:bg-blue-50"
+                        onClick={() => {
+                          let newItem: Record<string, any> = {};
+                          if (isBillsEnclosed) {
+                            newItem = {
+                              bill_number: '',
+                              date: '',
+                              issued_by: '',
+                              towards: '',
+                              amount: 0,
+                              items: []
+                            };
+                          }
+                          handleFormChange(currentPath, [newItem]);
+                        }}
+                      >
+                        + Add New Entry
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   <div className="space-y-6 divide-y divide-slate-100">
                     {value.map((item, idx) => {
@@ -899,6 +1028,20 @@ export default function JobComparisonPage() {
                                   {isBillsEnclosed ? `Bill #${idx + 1} Details` : `${formatLabel(key).replace(/s$/i, '')} #${idx + 1}`}
                                 </span>
                               </div>
+                              {isEditing && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="h-8 text-xs gap-1.5 bg-rose-50 text-rose-650 hover:bg-rose-100 border border-rose-200"
+                                  onClick={() => {
+                                    const updatedArr = value.filter((_: any, i: number) => i !== idx);
+                                    handleFormChange(currentPath, updatedArr);
+                                  }}
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                  Remove
+                                </Button>
+                              )}
                             </div>
                             
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 w-full px-1">
@@ -906,25 +1049,56 @@ export default function JobComparisonPage() {
                             </div>
 
                             {/* Deep Nested Items List Flat Rendering */}
-                            {Array.isArray(item.items) && (
+                            {(Array.isArray(item.items) || isEditing) && (
                               <div className="space-y-4 pt-2.5">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Nested Items ({item.items.length})</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Nested Items ({item.items?.length || 0})</span>
                                 <div className="space-y-4 divide-y divide-slate-100/70 pl-4 border-l border-slate-200">
-                                  {item.items.map((subItem: any, subIdx: number) => {
+                                  {(Array.isArray(item.items) ? item.items : []).map((subItem: any, subIdx: number) => {
                                     const subItemPath = `${itemPath}.items.${subIdx}`;
                                     const subFlat = flattenObject(subItem, '', subItemPath);
                                     
                                     return (
                                       <div key={subItemPath} className="pt-4 first:pt-0 space-y-2.5">
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase select-none">
-                                          Item #{subIdx + 1}
-                                        </span>
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-[9px] font-bold text-slate-400 uppercase select-none">
+                                            Item #{subIdx + 1}
+                                          </span>
+                                          {isEditing && (
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1 h-6 w-16 text-[10px]"
+                                              onClick={() => {
+                                                const updatedItems = item.items.filter((_: any, i: number) => i !== subIdx);
+                                                handleFormChange(`${itemPath}.items`, updatedItems);
+                                              }}
+                                            >
+                                              Remove Item
+                                            </Button>
+                                          )}
+                                        </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 w-full">
                                           {subFlat.map((sf) => renderField(sf.key, sf.value, sf.path))}
                                         </div>
                                       </div>
                                     );
                                   })}
+                                  {isEditing && (
+                                    <div className="pt-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 text-[10px] gap-1 text-slate-500 border-slate-250 hover:bg-slate-50"
+                                        onClick={() => {
+                                          const currentItems = Array.isArray(item.items) ? item.items : [];
+                                          const newItem = currentItems.length > 0 ? Object.fromEntries(Object.keys(currentItems[0]).map(k => [k, ''])) : { name: '', amount: 0 };
+                                          handleFormChange(`${itemPath}.items`, [...currentItems, newItem]);
+                                        }}
+                                      >
+                                        + Add Item
+                                      </Button>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}
@@ -935,16 +1109,29 @@ export default function JobComparisonPage() {
                         return (
                           <div key={itemPath} className="pt-2.5 first:pt-0">
                             {isEditing ? (
-                              <input
-                                type="text"
-                                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-250/20 transition-all bg-white shadow-3xs"
-                                value={item}
-                                onChange={(e) => {
-                                  const updatedArr = [...value];
-                                  updatedArr[idx] = e.target.value;
-                                  handleFormChange(currentPath, updatedArr);
-                                }}
-                              />
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-250/20 transition-all bg-white shadow-3xs"
+                                  value={item}
+                                  onChange={(e) => {
+                                    const updatedArr = [...value];
+                                    updatedArr[idx] = e.target.value;
+                                    handleFormChange(currentPath, updatedArr);
+                                  }}
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 h-8 w-8 shrink-0"
+                                  onClick={() => {
+                                    const updatedArr = value.filter((_: any, i: number) => i !== idx);
+                                    handleFormChange(currentPath, updatedArr);
+                                  }}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
                             ) : (
                               <div className="flex items-start gap-2.5 text-slate-700 text-sm font-medium leading-relaxed">
                                 <span className="text-slate-350 font-sans select-none font-bold">•</span>
@@ -955,6 +1142,51 @@ export default function JobComparisonPage() {
                         );
                       }
                     })}
+                    {isEditing && (
+                      <div className="pt-4 flex justify-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-9 text-xs gap-1.5 text-blue-600 border-blue-200 hover:bg-blue-50"
+                          onClick={() => {
+                            let newItem: Record<string, any> = {};
+                            const currentVal = Array.isArray(value) ? value : [];
+                            if (currentVal.length > 0) {
+                              Object.keys(currentVal[0]).forEach(k => {
+                                if (Array.isArray(currentVal[0][k])) {
+                                  newItem[k] = [];
+                                } else if (typeof currentVal[0][k] === 'object' && currentVal[0][k] !== null) {
+                                  newItem[k] = {};
+                                } else if (typeof currentVal[0][k] === 'boolean') {
+                                  newItem[k] = false;
+                                } else if (typeof currentVal[0][k] === 'number') {
+                                  newItem[k] = 0;
+                                } else {
+                                  newItem[k] = '';
+                                }
+                              });
+                            } else {
+                              if (isBillsEnclosed) {
+                                newItem = {
+                                  bill_number: '',
+                                  date: '',
+                                  issued_by: '',
+                                  towards: '',
+                                  amount: 0,
+                                  items: []
+                                };
+                              } else {
+                                newItem = {};
+                              }
+                            }
+                            const updatedArr = [...currentVal, newItem];
+                            handleFormChange(currentPath, updatedArr);
+                          }}
+                        >
+                          + Add New Entry
+                        </Button>
+                      </div>
+                    )}
                     {isBillsEnclosed && (
                       <div className="pt-4 mt-4 flex items-center justify-between border-t border-slate-200 bg-slate-50/50 p-3 rounded-xl">
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Final Billing Amount (Sum of Bills)</span>

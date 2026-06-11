@@ -79,6 +79,8 @@ export function ZipProcessor() {
       if (res.ok) {
         setSessionId(data.sessionId);
         setPolling(true);
+        setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
         toast({
           title: "Upload Successful",
           description: `ZIP archive uploaded. Queueing ${data.queuedFiles} claims.`,
@@ -190,7 +192,7 @@ export function ZipProcessor() {
                     Drop ZIP file here or <span className="text-violet-600">browse</span>
                   </p>
                   <p className="text-xs text-slate-400 mt-1">
-                    Expected structure: State/City/PDFs
+                    Supports ZIP archive containing PDF files
                   </p>
                 </div>
               </div>
@@ -265,7 +267,7 @@ export function ZipProcessor() {
                   <div className="max-h-40 overflow-y-auto space-y-1.5 border border-slate-100 rounded-xl p-2 bg-slate-50/50 scrollbar-thin">
                     {stats.details.success.map((f, i) => (
                       <div key={i} className="text-xs p-2 bg-emerald-50/30 border border-emerald-100 rounded-lg text-emerald-800">
-                        <span className="font-bold">[{f.state}/{f.city}]</span> {f.filename}
+                        {f.filename}
                         {f.externalJobId && <span className="ml-1.5 text-slate-400 font-mono text-[10px]">Job: {f.externalJobId}</span>}
                       </div>
                     ))}
@@ -287,7 +289,7 @@ export function ZipProcessor() {
               <div className="max-h-32 overflow-y-auto space-y-1.5 border border-slate-100 rounded-xl p-2 bg-slate-50/50 scrollbar-thin">
                 {stats.details.failed.map((f, i) => (
                   <div key={i} className="text-xs p-2 bg-red-50/30 border border-red-100 rounded-lg text-red-800">
-                    <span className="font-bold">[{f.state}/{f.city}]</span> {f.filename}: {f.error}
+                    {f.filename}: {f.error}
                   </div>
                 ))}
               </div>
