@@ -8,7 +8,7 @@ __v0_jsx-dev-runtime.ts
 .vercel/
 next.user-config.*
 /build
-
+.env
 # Environment variables
 .env*.local
 
