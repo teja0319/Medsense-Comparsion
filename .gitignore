@@ -7,7 +7,6 @@ __v0_jsx-dev-runtime.ts
 .v0-trash/
 .vercel/
 next.user-config.*
-/build
 .env
 # Environment variables
 .env*.local
@@ -19,4 +18,3 @@ node_modules/
 .vercel
 .env
 *.env
-build/standalone/.env
