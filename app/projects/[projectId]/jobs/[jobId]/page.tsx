@@ -690,134 +690,143 @@ export default function JobComparisonPage() {
                 )}
 
                 {/* Medicines sub-section (array of invoice objects, each with nested items) */}
-                {(Array.isArray(value.medicines) || isEditing) && (
-                  <div className="space-y-4 border-t border-slate-100 pt-4">
-                    <span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest block">
-                      Medicines ({value.medicines?.length || 0} invoice{value.medicines?.length !== 1 ? 's' : ''})
-                    </span>
-                    <div className="space-y-6 divide-y divide-slate-100">
-                      {(Array.isArray(value.medicines) ? value.medicines : []).map((invoice: any, invIdx: number) => {
-                        const invPath = `${currentPath}.medicines.${invIdx}`;
-                        // Get top-level invoice fields (skip the nested items array)
-                        const invoiceFields = flattenObject(
-                          Object.fromEntries(Object.entries(invoice).filter(([k]) => k !== 'items')),
-                          '', invPath
-                        );
+                {/* Medicines sub-section (array of invoice objects, each with nested items) */}
+                {(() => {
+                  const medicinesArray = Array.isArray(value.medicines)
+                    ? value.medicines
+                    : (value.medicines && typeof value.medicines === 'object' ? [value.medicines] : []);
 
-                        return (
-                          <div key={invPath} className="pt-6 first:pt-0 space-y-4 w-full">
-                            <div className="select-none flex items-center justify-between bg-gradient-to-r from-blue-50/70 to-indigo-50/20 px-4 py-2 rounded-xl border border-blue-100/80 shadow-3xs">
-                              <div className="flex items-center gap-3">
-                                <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black shadow-md shadow-blue-500/20">
-                                  {invIdx + 1}
+                  if (medicinesArray.length === 0 && !isEditing) return null;
+
+                  return (
+                    <div className="space-y-4 border-t border-slate-100 pt-4">
+                      <span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest block">
+                        Medicines ({medicinesArray.length} invoice{medicinesArray.length !== 1 ? 's' : ''})
+                      </span>
+                      <div className="space-y-6 divide-y divide-slate-100">
+                        {medicinesArray.map((invoice: any, invIdx: number) => {
+                          const invPath = `${currentPath}.medicines.${invIdx}`;
+                          // Get top-level invoice fields (skip the nested items array)
+                          const invoiceFields = flattenObject(
+                            Object.fromEntries(Object.entries(invoice).filter(([k]) => k !== 'items')),
+                            '', invPath
+                          );
+
+                          return (
+                            <div key={invPath} className="pt-6 first:pt-0 space-y-4 w-full">
+                              <div className="select-none flex items-center justify-between bg-gradient-to-r from-blue-50/70 to-indigo-50/20 px-4 py-2 rounded-xl border border-blue-100/80 shadow-3xs">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-black shadow-md shadow-blue-500/20">
+                                    {invIdx + 1}
+                                  </div>
+                                  <span className="text-xs font-bold text-blue-900 tracking-wide flex items-center gap-1.5">
+                                    <Receipt className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                    Medicine Invoice #{invIdx + 1}
+                                  </span>
                                 </div>
-                                <span className="text-xs font-bold text-blue-900 tracking-wide flex items-center gap-1.5">
-                                  <Receipt className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                                  Medicine Invoice #{invIdx + 1}
-                                </span>
+                                {isEditing && (
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="h-8 text-xs gap-1.5 bg-rose-50 text-rose-650 hover:bg-rose-100 border border-rose-200"
+                                    onClick={() => {
+                                      const updatedArr = medicinesArray.filter((_: any, i: number) => i !== invIdx);
+                                      handleFormChange(`${currentPath}.medicines`, updatedArr);
+                                    }}
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                    Remove Invoice
+                                  </Button>
+                                )}
                               </div>
-                              {isEditing && (
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  className="h-8 text-xs gap-1.5 bg-rose-50 text-rose-650 hover:bg-rose-100 border border-rose-200"
-                                  onClick={() => {
-                                    const updatedArr = value.medicines.filter((_: any, i: number) => i !== invIdx);
-                                    handleFormChange(`${currentPath}.medicines`, updatedArr);
-                                  }}
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                  Remove Invoice
-                                </Button>
+                              
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 w-full px-1">
+                                {invoiceFields.map((f) => renderField(f.key, f.value, f.path))}
+                              </div>
+
+                              {/* Nested medicine items */}
+                              {(Array.isArray(invoice.items) || isEditing) && (
+                                <div className="space-y-4 pt-2.5">
+                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Billed Medicines Items ({invoice.items?.length || 0})</span>
+                                  <div className="space-y-4 divide-y divide-slate-100/70 pl-4 border-l border-slate-200">
+                                    {(Array.isArray(invoice.items) ? invoice.items : []).map((subItem: any, subIdx: number) => {
+                                      const subItemPath = `${invPath}.items.${subIdx}`;
+                                      const subFlat = flattenObject(subItem, '', subItemPath);
+                                      
+                                      return (
+                                        <div key={subItemPath} className="pt-4 first:pt-0 space-y-2.5">
+                                          <div className="flex items-center justify-between">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase select-none">
+                                              Item #{subIdx + 1}
+                                            </span>
+                                            {isEditing && (
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-rose-500 hover:text-rose-750 hover:bg-rose-50 p-1 h-6 w-16 text-[10px]"
+                                                onClick={() => {
+                                                  const updatedItems = invoice.items.filter((_: any, i: number) => i !== subIdx);
+                                                  handleFormChange(`${invPath}.items`, updatedItems);
+                                                }}
+                                              >
+                                                Remove Item
+                                              </Button>
+                                            )}
+                                          </div>
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 w-full">
+                                            {subFlat.map((sf) => renderField(sf.key, sf.value, sf.path))}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                    {isEditing && (
+                                      <div className="pt-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-7 text-[10px] gap-1 text-slate-500 border-slate-250 hover:bg-slate-50"
+                                          onClick={() => {
+                                            const currentItems = Array.isArray(invoice.items) ? invoice.items : [];
+                                            const newItem = currentItems.length > 0 ? Object.fromEntries(Object.keys(currentItems[0]).map(k => [k, ''])) : { name: '', quantity: 1, amount: 0 };
+                                            handleFormChange(`${invPath}.items`, [...currentItems, newItem]);
+                                          }}
+                                        >
+                                          + Add Item
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               )}
                             </div>
-                            
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 w-full px-1">
-                              {invoiceFields.map((f) => renderField(f.key, f.value, f.path))}
-                            </div>
-
-                            {/* Nested medicine items */}
-                            {(Array.isArray(invoice.items) || isEditing) && (
-                              <div className="space-y-4 pt-2.5">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Billed Medicines Items ({invoice.items?.length || 0})</span>
-                                <div className="space-y-4 divide-y divide-slate-100/70 pl-4 border-l border-slate-200">
-                                  {(Array.isArray(invoice.items) ? invoice.items : []).map((subItem: any, subIdx: number) => {
-                                    const subItemPath = `${invPath}.items.${subIdx}`;
-                                    const subFlat = flattenObject(subItem, '', subItemPath);
-                                    
-                                    return (
-                                      <div key={subItemPath} className="pt-4 first:pt-0 space-y-2.5">
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-[9px] font-bold text-slate-400 uppercase select-none">
-                                            Item #{subIdx + 1}
-                                          </span>
-                                          {isEditing && (
-                                            <Button
-                                              size="sm"
-                                              variant="ghost"
-                                              className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1 h-6 w-16 text-[10px]"
-                                              onClick={() => {
-                                                const updatedItems = invoice.items.filter((_: any, i: number) => i !== subIdx);
-                                                handleFormChange(`${invPath}.items`, updatedItems);
-                                              }}
-                                            >
-                                              Remove Item
-                                            </Button>
-                                          )}
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3 w-full">
-                                          {subFlat.map((sf) => renderField(sf.key, sf.value, sf.path))}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                  {isEditing && (
-                                    <div className="pt-2">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="h-7 text-[10px] gap-1 text-slate-500 border-slate-250 hover:bg-slate-50"
-                                        onClick={() => {
-                                          const currentItems = Array.isArray(invoice.items) ? invoice.items : [];
-                                          const newItem = currentItems.length > 0 ? Object.fromEntries(Object.keys(currentItems[0]).map(k => [k, ''])) : { name: '', quantity: 1, amount: 0 };
-                                          handleFormChange(`${invPath}.items`, [...currentItems, newItem]);
-                                        }}
-                                      >
-                                        + Add Item
-                                      </Button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
+                          );
+                        })}
+                        {isEditing && (
+                          <div className="pt-4 flex justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-9 text-xs gap-1.5 text-violet-600 border-violet-200 hover:bg-violet-50"
+                              onClick={() => {
+                                const currentMedicines = medicinesArray;
+                                const newInvoice = {
+                                  invoice_number: '',
+                                  date: '',
+                                  pharmacy_name: '',
+                                  total_amount: 0,
+                                  items: []
+                                };
+                                handleFormChange(`${currentPath}.medicines`, [...currentMedicines, newInvoice]);
+                              }}
+                            >
+                              + Add Medicine Invoice
+                            </Button>
                           </div>
-                        );
-                      })}
-                      {isEditing && (
-                        <div className="pt-4 flex justify-end">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-9 text-xs gap-1.5 text-violet-600 border-violet-200 hover:bg-violet-50"
-                            onClick={() => {
-                              const currentMedicines = Array.isArray(value.medicines) ? value.medicines : [];
-                              const newInvoice = {
-                                invoice_number: '',
-                                date: '',
-                                pharmacy_name: '',
-                                total_amount: 0,
-                                items: []
-                              };
-                              handleFormChange(`${currentPath}.medicines`, [...currentMedicines, newInvoice]);
-                            }}
-                          >
-                            + Add Medicine Invoice
-                          </Button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </>
             )}
           </div>
