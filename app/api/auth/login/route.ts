@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { verifyPassword } from '@/lib/password';
-import crypto from 'crypto';
 import { sendOtpEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
@@ -23,7 +22,7 @@ export async function POST(req: Request) {
     if (!ok) return NextResponse.json({ error: 'Invalid' }, { status: 401 });
 
     // Generate a secure 6-digit OTP
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
     // Save/Overwrite OTP in database
@@ -41,8 +40,11 @@ export async function POST(req: Request) {
     await sendOtpEmail(email, otp, 'login');
 
     return NextResponse.json({ ok: true, requiresOtp: true, email });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Login error:', err);
-    return NextResponse.json({ error: 'Login failed' }, { status: 500 });
+    return NextResponse.json({ 
+      error: err instanceof Error ? err.message : 'Login failed', 
+      details: err instanceof Error ? err.message : String(err) 
+    }, { status: 500 });
   }
 }

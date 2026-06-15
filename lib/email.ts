@@ -3,6 +3,9 @@ export async function sendOtpEmail(email: string, otp: string, purpose: 'login' 
   const senderEmail = process.env.BREVO_SENDER_EMAIL || 'developers@yira.ai';
   const senderName = process.env.BREVO_SENDER_NAME || 'MedSense Security';
 
+  console.log(`[sendOtpEmail] Attempting to send ${purpose} email to ${email}`);
+  console.log(`[sendOtpEmail] config - BREVO_API_KEY present: ${!!apiKey}, SENDER_EMAIL: ${senderEmail}, SENDER_NAME: ${senderName}`);
+
   if (!apiKey) {
     throw new Error('BREVO_API_KEY is not defined in environment variables.');
   }

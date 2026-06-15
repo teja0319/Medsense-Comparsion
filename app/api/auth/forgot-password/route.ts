@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
-import crypto from 'crypto';
 import { sendOtpEmail } from '@/lib/email';
 
 export async function POST(req: Request) {
@@ -24,7 +23,7 @@ export async function POST(req: Request) {
     }
 
     // Generate a secure 6-digit OTP
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
     // Save/Overwrite OTP in database for forgot password
@@ -42,8 +41,11 @@ export async function POST(req: Request) {
     await sendOtpEmail(email, otp, 'forgot_password');
 
     return NextResponse.json({ ok: true, email });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Forgot password error:', err);
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+    return NextResponse.json({ 
+      error: err instanceof Error ? err.message : 'Failed to process request', 
+      details: err instanceof Error ? err.message : String(err) 
+    }, { status: 500 });
   }
 }

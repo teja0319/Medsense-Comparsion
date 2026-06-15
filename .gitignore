@@ -10,6 +10,7 @@ next.user-config.*
 .env
 # Environment variables
 .env*.local
+build
 
 # Common ignores
 node_modules/
@@ -18,3 +19,4 @@ node_modules/
 .vercel
 .env
 *.env
+
