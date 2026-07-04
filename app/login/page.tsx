@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Shield, Key, ArrowLeft } from 'lucide-react';
 
-type Mode = 'login' | 'otp' | 'forgot-request' | 'forgot-reset';
+type Mode = 'login' | 'forgot-request' | 'forgot-reset';
 
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>('login');
@@ -35,36 +35,6 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || 'Invalid email or password');
-        setLoading(false);
-        return;
-      }
-      
-      if (data.requiresOtp) {
-        setMode('otp');
-        setOtp('');
-        setLoading(false);
-      } else {
-        router.push('/projects/857d529e-75cf-4210-bea3-ca023a15ed1d');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-      setLoading(false);
-    }
-  }
-
-  async function handleOtpSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Invalid or expired verification code');
         setLoading(false);
         return;
       }
@@ -265,72 +235,7 @@ export default function LoginPage() {
             </>
           )}
 
-          {/* OTP VERIFICATION MODE */}
-          {mode === 'otp' && (
-            <>
-              <div className="mb-6">
-                <button
-                  onClick={() => {
-                    setMode('login');
-                    setError(null);
-                  }}
-                  className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 font-semibold mb-4 transition-colors"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  Back to credentials
-                </button>
-                <h2 className="text-xl font-semibold text-slate-900">Security Verification</h2>
-                <p className="text-sm text-slate-500 mt-1">We sent a 6-digit code to <strong className="text-slate-700">{email}</strong></p>
-              </div>
 
-              {/* Error */}
-              {error && (
-                <div className="mb-4 px-4 py-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-700 text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleOtpSubmit} className="space-y-5">
-                {/* OTP Input */}
-                <div className="space-y-2">
-                  <label htmlFor="otp" className="text-sm font-medium text-slate-700">Verification Code</label>
-                  <div className="relative group">
-                    <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[oklch(0.55_0.176_265.75)] transition-colors" />
-                    <input
-                      id="otp"
-                      type="text"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      placeholder="000000"
-                      required
-                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/60 border border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm tracking-[0.25em] font-semibold text-center focus:outline-none focus:border-[oklch(0.55_0.176_265.75)] focus:ring-1 focus:ring-[oklch(0.55_0.176_265.75/0.3)] transition-all duration-200"
-                    />
-                  </div>
-                </div>
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={loading || otp.length !== 6}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[oklch(0.55_0.176_265.75)] to-[oklch(0.5_0.2_290)] text-white font-semibold text-sm hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[oklch(0.55_0.176_265.75/0.5)] focus:ring-offset-2 focus:ring-offset-white disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-[oklch(0.55_0.176_265.75/0.2)]"
-                >
-                  {loading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    <>
-                      Verify & Sign In
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-            </>
-          )}
 
           {/* FORGOT PASSWORD REQUEST MODE */}
           {mode === 'forgot-request' && (

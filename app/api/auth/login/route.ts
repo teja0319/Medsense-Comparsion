@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { verifyPassword } from '@/lib/password';
-import { sendOtpEmail } from '@/lib/email';
+import { signToken, setAuthCookie } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
@@ -21,25 +21,11 @@ export async function POST(req: Request) {
     const ok = verifyPassword(password, user.password as string);
     if (!ok) return NextResponse.json({ error: 'Invalid' }, { status: 401 });
 
-    // Generate a secure 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+    // Complete login, issue token, and set session cookie
+    const token = await signToken(email, user._id.toString(), user.role);
+    await setAuthCookie(token);
 
-    // Save/Overwrite OTP in database
-    const otps = db.collection('otps');
-    await otps.deleteMany({ email, purpose: 'login' });
-    await otps.insertOne({
-      email,
-      code: otp,
-      purpose: 'login',
-      expiresAt,
-      createdAt: new Date(),
-    });
-
-    // Send OTP via email using Brevo
-    await sendOtpEmail(email, otp, 'login');
-
-    return NextResponse.json({ ok: true, requiresOtp: true, email });
+    return NextResponse.json({ ok: true });
   } catch (err: any) {
     console.error('Login error:', err);
     return NextResponse.json({ 
