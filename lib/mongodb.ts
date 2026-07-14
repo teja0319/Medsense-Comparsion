@@ -7,7 +7,7 @@ export async function getMongoClient(): Promise<MongoClient> {
     return cachedClient;
   }
 
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI || 'mongodb+srv://tejach_db_user:YxmyYdJXycVMZsi5@cluster0.dteet0.mongodb.net/?retryWrites=true&w=majority';
   if (!uri) {
     throw new Error('Please define the MONGODB_URI environment variable');
   }
@@ -25,6 +25,6 @@ export async function getMongoClient(): Promise<MongoClient> {
 
 export async function connectToDatabase() {
   const client = await getMongoClient();
-  const db = client.db(process.env.MONGODB_DB_NAME || 'admin');
+  const db = client.db(process.env.MONGODB_DB_NAME || 'MedSenseDev');
   return { client, db };
 }
