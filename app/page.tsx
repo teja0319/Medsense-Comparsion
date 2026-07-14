@@ -54,6 +54,9 @@ export default async function Home() {
                 <p className="text-sm text-muted-foreground mt-2">
                   Please check your Medsense connection and environment variables.
                 </p>
+                <p className="text-xs text-muted-foreground/60 mt-4 font-mono max-w-lg mx-auto bg-slate-900/50 p-3 rounded-xl border border-white/5 break-all">
+                  {error}
+                </p>
               </div>
             </div>
           ) : projects.length === 0 ? (
