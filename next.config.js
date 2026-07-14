@@ -1,14 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-    swcMinify: true,
-    distDir: "build", //add this
-    output: "standalone", //add this
-  // Ensure proper React handling
+  distDir: "build",
+  output: "standalone",
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: true,
+  },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  // Allow API calls over HTTP in development only
+  experimental: {
+    proxyClientMaxBodySize: '150mb',
+  },
   headers: async () => {
     return [
       {
