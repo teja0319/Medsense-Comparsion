@@ -189,10 +189,10 @@ export default function JobDetailPage() {
             {/* Right 50% — Parsed Details / JSON View */}
             <div className="w-1/2 flex flex-col overflow-hidden bg-transparent">
               {(() => {
-                let sanitizedData = job.parsed_data;
-                if (sanitizedData) {
+                let sanitizedData: any = undefined;
+                if (job.parsed_data) {
                   try {
-                    sanitizedData = JSON.parse(JSON.stringify(sanitizedData));
+                    sanitizedData = JSON.parse(JSON.stringify(job.parsed_data));
                     
                     // Inject duplicate_check object if it exists at root
                     if (job.duplicate_check) {
