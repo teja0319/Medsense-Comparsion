@@ -4,28 +4,29 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
-
+ 
     // Image optimization
     images: {
         unoptimized: true,
     },
-
+ 
     // ESLint configuration
     eslint: {
         ignoreDuringBuilds: true,
     },
-     experimental: {
-    proxyClientMaxBodySize: '150mb',
-  },
-
+ 
     // React configuration
     reactStrictMode: true,
     swcMinify: true,
-
+ 
     // Compiler configuration
     compiler: {
         removeConsole: process.env.NODE_ENV === 'production',
     },
+ 
+  experimental: {
+    proxyClientMaxBodySize: '150mb',
+  },
 
     // Security headers
     headers: async () => {
@@ -42,5 +43,5 @@ const nextConfig = {
         ]
     },
 }
-
+ 
 export default nextConfig

@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
     swcMinify: true,
-    // use Next.js default output directory `.next`
-    output: "standalone",
+    distDir: "build", //add this
+    output: "standalone", //add this
   // Ensure proper React handling
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -23,5 +23,5 @@ const nextConfig = {
     ]
   },
 }
-
+ 
 module.exports = nextConfig
