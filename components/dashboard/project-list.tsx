@@ -39,35 +39,41 @@ export function ProjectList({ projects }: ProjectListProps) {
           href={`/projects/${project.project_id}`}
           className="group"
         >
-          <Card className="h-full cursor-pointer transition-all duration-300 hover:shadow-xl hover:border-primary/50 border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-4">
-                <CardTitle className="text-xl group-hover:text-primary transition-colors duration-200 line-clamp-2">
-                  {project.project_name}
-                </CardTitle>
-                <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/25 transition-colors">
-                  <ArrowRight className="w-4 h-4 text-primary" />
-                </div>
+          <div className="h-full cursor-pointer relative overflow-hidden bg-white/80 backdrop-blur-md border border-slate-200/60 hover:border-primary/45 rounded-2xl p-6 shadow-md hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
+            {/* Top card glowing highlight line */}
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <h3 className="text-base font-bold text-slate-800 group-hover:text-primary transition-colors duration-200 line-clamp-2">
+                {project.project_name}
+              </h3>
+              <div className="w-8 h-8 rounded-xl bg-primary/5 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors border border-primary/20 shadow-xs">
+                <ArrowRight className="w-4 h-4 text-primary" />
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            </div>
+
+            <div className="space-y-4">
               {project.description && (
-                <p className="text-muted-foreground text-sm line-clamp-2">
+                <p className="text-slate-500 text-xs font-semibold leading-relaxed line-clamp-2">
                   {project.description}
                 </p>
               )}
-              {project.created_at && (
-                <p className="text-xs text-muted-foreground/70">
-                  Created {new Date(project.created_at).toLocaleDateString()}
-                </p>
-              )}
-              <div className="pt-2 border-t border-border/30">
-                <span className="inline-flex items-center gap-2 text-primary font-medium text-sm group-hover:gap-3 transition-all">
-                  View Jobs <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs">
+                {project.created_at ? (
+                  <span className="text-slate-400 font-semibold">
+                    Created {new Date(project.created_at).toLocaleDateString()}
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <span className="inline-flex items-center gap-1 text-primary font-bold hover:gap-2 transition-all">
+                  Open Project
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </Link>
       ))}
     </div>

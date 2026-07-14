@@ -13,6 +13,11 @@ interface Project {
   created_at?: string;
 }
 
+const ALLOWED_PROJECT_IDS = [
+  '40eeabbd-a303-4389-90a0-8b09844301cd',
+  '32a8cce6-eacc-4c8b-af54-9a341609d6b2',
+];
+
 export default async function ProjectPage({
   params,
 }: {
@@ -27,9 +32,9 @@ export default async function ProjectPage({
     const { db } = await connectToDatabase();
     const projectsCollection = db.collection('projects');
 
-    // Fetch all projects for sidebar
+    // Fetch only allowed projects for sidebar
     const rawProjects = await projectsCollection
-      .find({})
+      .find({ project_id: { $in: ALLOWED_PROJECT_IDS } })
       .sort({ created_at: -1 })
       .toArray();
     
@@ -50,7 +55,7 @@ export default async function ProjectPage({
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-transparent overflow-hidden">
       <Sidebar projects={projects} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
@@ -60,20 +65,19 @@ export default async function ProjectPage({
             { label: currentProject?.project_name || 'Loading...' },
           ]}
         />
-        <main className="flex-1 overflow-auto p-8">
+        <main className="flex-1 overflow-auto pl-2 pr-4 pb-4 pt-0">
           {error ? (
             <div className="text-center py-12">
               <p className="text-destructive font-medium">Error: {error}</p>
             </div>
           ) : (
-            <div>
-              <div className="mb-8">
-                {currentProject?.description && (
-                  <p className="text-muted-foreground">{currentProject.description}</p>
-                )}
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Parsing Jobs</h2>
+            <div className="space-y-4">
+              {currentProject?.description && (
+                <div className="px-6 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.04] backdrop-blur-md">
+                  <p className="text-xs text-slate-400 font-semibold">{currentProject.description}</p>
+                </div>
+              )}
+              <div className="p-1">
                 <JobsTable projectId={projectId} />
               </div>
             </div>

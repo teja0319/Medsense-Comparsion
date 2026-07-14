@@ -15,13 +15,12 @@ export function PdfViewer({ pdfUrl, fileName = 'document.pdf' }: PdfViewerProps)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Convert Azure Blob URL to Google Docs Viewer URL for better compatibility
   const getViewerUrl = (url: string): string => {
-    if (url.includes('blob.core.windows.net')) {
-      // Use Google Docs Viewer for Azure Blob URLs - bypasses CORS issues
-      return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+    // Instead of Google Docs viewer which fails often, proxy it directly through our app
+    if (url.includes('blob.core.windows.net') || url.startsWith('http')) {
+      return `/api/proxy-pdf?url=${encodeURIComponent(url)}`;
     }
     return url;
   };
@@ -36,7 +35,7 @@ export function PdfViewer({ pdfUrl, fileName = 'document.pdf' }: PdfViewerProps)
     timeoutRef.current = setTimeout(() => {
       setLoading(false);
       setError('PDF took too long to load. Try downloading instead.');
-    }, 8000);
+    }, 45000); // Increased timeout to 45 seconds
 
     const handleIframeLoad = () => {
       setLoading(false);

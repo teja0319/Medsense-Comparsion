@@ -13,6 +13,11 @@ interface Project {
   created_at?: string;
 }
 
+const ALLOWED_PROJECT_IDS = [
+  '40eeabbd-a303-4389-90a0-8b09844301cd',
+  '32a8cce6-eacc-4c8b-af54-9a341609d6b2',
+];
+
 export default async function Home() {
   let projects: Project[] = [];
   let error: string | null = null;
@@ -21,9 +26,9 @@ export default async function Home() {
     const { db } = await connectToDatabase();
     const projectsCollection = db.collection('projects');
 
-    // Fetch all projects
+    // Fetch only allowed projects
     const rawProjects = await projectsCollection
-      .find({})
+      .find({ project_id: { $in: ALLOWED_PROJECT_IDS } })
       .sort({ created_at: -1 })
       .toArray();
 
@@ -34,11 +39,11 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-b from-background to-background/80">
+    <div className="flex h-screen bg-transparent overflow-hidden">
       <Sidebar projects={projects} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title="Projects" />
-        <main className="flex-1 overflow-auto p-8 space-y-6">
+        <main className="flex-1 overflow-auto pl-2 pr-4 pb-4 pt-0 space-y-6">
           {error ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
