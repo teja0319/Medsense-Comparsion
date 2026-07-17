@@ -26,6 +26,19 @@ export async function POST(request: NextRequest) {
     const client = await getMongoClient();
     const db = client.db(process.env.MONGODB_DB_NAME || 'admin');
 
+    // Ensure only registered users can request OTP
+    const user = await db.collection('users').findOne({
+      email: { $regex: new RegExp(`^${email.trim()}$`, 'i') }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'This email is not registered.' }, { status: 403 });
+    }
+
+    if (user.isActive === false) {
+      return NextResponse.json({ error: 'Your account is deactivated.' }, { status: 403 });
+    }
+
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes

@@ -72,16 +72,14 @@ function Toast({
 function OTPDigitInput({
   value,
   onChange,
-  onComplete,
   disabled,
 }: {
   value: string;
   onChange: (val: string) => void;
-  onComplete: () => void;
   disabled: boolean;
 }) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const digits = value.padEnd(6, '').split('').slice(0, 6);
+  const digits = Array.from({ length: 6 }).map((_, idx) => value[idx] || '');
 
   const focusInput = (index: number) => {
     if (index >= 0 && index < 6) {
@@ -90,19 +88,21 @@ function OTPDigitInput({
   };
 
   const handleChange = (index: number, char: string) => {
-    if (!/^\d*$/.test(char)) return;
-
-    const newDigits = [...digits];
-    newDigits[index] = char.slice(-1);
-    const newValue = newDigits.join('');
-    onChange(newValue.replace(/ /g, ''));
-
-    if (char && index < 5) {
-      focusInput(index + 1);
+    const cleanChar = char.replace(/\D/g, '');
+    if (!cleanChar) {
+      const newDigits = [...digits];
+      newDigits[index] = '';
+      onChange(newDigits.join(''));
+      return;
     }
 
-    if (char && index === 5 && newValue.replace(/ /g, '').length === 6) {
-      setTimeout(onComplete, 100);
+    const newDigits = [...digits];
+    newDigits[index] = cleanChar.slice(-1);
+    const newValue = newDigits.join('');
+    onChange(newValue);
+
+    if (index < 5) {
+      focusInput(index + 1);
     }
   };
 
@@ -110,12 +110,12 @@ function OTPDigitInput({
     if (e.key === 'Backspace') {
       e.preventDefault();
       const newDigits = [...digits];
-      if (digits[index] && digits[index] !== ' ') {
+      if (digits[index]) {
         newDigits[index] = '';
-        onChange(newDigits.join('').replace(/ /g, ''));
+        onChange(newDigits.join(''));
       } else if (index > 0) {
         newDigits[index - 1] = '';
-        onChange(newDigits.join('').replace(/ /g, ''));
+        onChange(newDigits.join(''));
         focusInput(index - 1);
       }
     } else if (e.key === 'ArrowLeft') {
@@ -131,9 +131,6 @@ function OTPDigitInput({
     if (pasted) {
       onChange(pasted);
       focusInput(Math.min(pasted.length, 5));
-      if (pasted.length === 6) {
-        setTimeout(onComplete, 100);
-      }
     }
   };
 
@@ -150,7 +147,7 @@ function OTPDigitInput({
             inputMode="numeric"
             maxLength={1}
             disabled={disabled}
-            value={digits[i]?.trim() || ''}
+            value={digits[i]}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
             onPaste={handlePaste}
@@ -225,18 +222,20 @@ export default function LoginPage() {
     }
   };
 
-  const handleVerifyOTP = async () => {
-    if (otp.length !== 6) {
+  const handleVerifyOTP = async (otpToVerify?: string) => {
+    const finalOtp = otpToVerify || otp;
+    if (finalOtp.length !== 6) {
       showToast('Please enter the 6-digit OTP', 'error');
       return;
     }
+    if (loading) return;
 
     setLoading(true);
     try {
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email, otp: finalOtp }),
       });
 
       const data = await res.json();
@@ -255,6 +254,13 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Auto-submit OTP when it reaches 6 characters
+  useEffect(() => {
+    if (otp.length === 6) {
+      handleVerifyOTP(otp);
+    }
+  }, [otp]);
 
   const handleBack = () => {
     setStep('email');
@@ -441,13 +447,12 @@ export default function LoginPage() {
                   <OTPDigitInput
                     value={otp}
                     onChange={setOtp}
-                    onComplete={handleVerifyOTP}
                     disabled={loading}
                   />
 
                   <button
                     type="button"
-                    onClick={handleVerifyOTP}
+                    onClick={() => handleVerifyOTP()}
                     disabled={loading || otp.length !== 6}
                     className="
                       w-full h-12 rounded-xl font-semibold text-sm
