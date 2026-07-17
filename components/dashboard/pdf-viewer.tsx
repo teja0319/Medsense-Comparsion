@@ -8,24 +8,30 @@ import { ZoomIn, ZoomOut, Download, ExternalLink, RefreshCw, AlertCircle } from 
 interface PdfViewerProps {
   pdfUrl: string;
   fileName?: string;
+  page?: number;
 }
 
-export function PdfViewer({ pdfUrl, fileName = 'document.pdf' }: PdfViewerProps) {
+export function PdfViewer({ pdfUrl, fileName = 'document.pdf', page }: PdfViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const getViewerUrl = (url: string): string => {
-    // Instead of Google Docs viewer which fails often, proxy it directly through our app
+  const getViewerUrl = (url: string, pageNum?: number): string => {
+    let target = url;
     if (url.includes('blob.core.windows.net') || url.startsWith('http')) {
-      return `/api/proxy-pdf?url=${encodeURIComponent(url)}`;
+      target = `/api/proxy-pdf?url=${encodeURIComponent(url)}`;
     }
-    return url;
+    if (pageNum) {
+      // Append query param to force iframe reload and hash for PDF page jump
+      target = `${target}&pdf_page=${pageNum}#page=${pageNum}`;
+    }
+    return target;
   };
 
   const viewerUrl = getViewerUrl(pdfUrl);
+  const initialSrc = getViewerUrl(pdfUrl, page);
 
   useEffect(() => {
     setLoading(true);
@@ -63,6 +69,12 @@ export function PdfViewer({ pdfUrl, fileName = 'document.pdf' }: PdfViewerProps)
     };
   }, [viewerUrl]);
 
+  useEffect(() => {
+    if (iframeRef.current && page !== undefined) {
+      iframeRef.current.src = getViewerUrl(pdfUrl, page);
+    }
+  }, [page, pdfUrl]);
+
   const handleDownload = () => {
     const a = document.createElement('a');
     a.href = pdfUrl;
@@ -80,7 +92,7 @@ export function PdfViewer({ pdfUrl, fileName = 'document.pdf' }: PdfViewerProps)
     setLoading(true);
     setError(null);
     if (iframeRef.current) {
-      iframeRef.current.src = viewerUrl;
+      iframeRef.current.src = initialSrc;
     }
   };
 
@@ -92,7 +104,7 @@ export function PdfViewer({ pdfUrl, fileName = 'document.pdf' }: PdfViewerProps)
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <div className="flex flex-col h-full bg-slate-55 dark:bg-slate-900 overflow-hidden">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-3 py-2 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0">
         <div className="flex items-center gap-1">
@@ -168,7 +180,7 @@ export function PdfViewer({ pdfUrl, fileName = 'document.pdf' }: PdfViewerProps)
         {!error && (
           <iframe
             ref={iframeRef}
-            src={viewerUrl}
+            src={initialSrc}
             className="w-full h-full border-0"
             style={{
               transform: `scale(${zoom})`,

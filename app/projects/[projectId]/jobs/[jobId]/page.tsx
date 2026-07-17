@@ -36,6 +36,7 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('parsed');
+  const [pdfPage, setPdfPage] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -175,6 +176,7 @@ export default function JobDetailPage() {
                 <PdfViewer
                   pdfUrl={job.files[0].blob_url}
                   fileName={job.files[0].filename}
+                  page={pdfPage}
                 />
               ) : (
                 <div className="flex-1 flex items-center justify-center">
@@ -222,7 +224,7 @@ export default function JobDetailPage() {
 
                 if (viewMode === 'parsed') {
                   return sanitizedData ? (
-                    <ParsedDetailsViewer data={sanitizedData} />
+                    <ParsedDetailsViewer data={sanitizedData} onPageClick={(pageNumber) => setPdfPage(pageNumber)} />
                   ) : (
                     <div className="flex-1 flex items-center justify-center">
                       <div className="text-center space-y-3">
