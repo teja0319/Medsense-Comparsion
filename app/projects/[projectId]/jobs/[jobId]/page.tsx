@@ -222,6 +222,87 @@ export default function JobDetailPage() {
                   sanitizedData = { duplicate_check: JSON.parse(JSON.stringify(job.duplicate_check)) };
                 }
 
+                if (sanitizedData) {
+                  // Construct fraudSummary
+                  let fraudSummary = "";
+                  if (job.duplicate_check) {
+                    const checks = Object.entries(job.duplicate_check);
+                    const performedChecks = checks.filter(([_, v]: any) => v.performed);
+                    const matches = performedChecks.filter(([_, v]: any) => v.matches_found > 0);
+                    
+                    if (matches.length > 0) {
+                      const matchedTypes = matches.map(([k]) => k.toUpperCase()).join(", ");
+                      fraudSummary = `Fraud Detection: Duplicate matches found for ${matchedTypes}. Potential document duplication detected.`;
+                    } else if (performedChecks.length > 0) {
+                      const performedTypes = performedChecks.map(([k]) => k.toUpperCase()).join(", ");
+                      fraudSummary = `Fraud Detection: No duplicate records found for ${performedTypes}.`;
+                    } else {
+                      const reasons = checks.map(([k, v]: any) => `${k.toUpperCase()}: ${v.reason || 'Not performed'}`).join("; ");
+                      fraudSummary = `Fraud Detection: Duplicate check not performed (${reasons}).`;
+                    }
+                  }
+
+                  // Construct faceSummary
+                  let faceSummary = "";
+                  const photoComp = job.parsed_data?.photo_comparison as any;
+                  if (photoComp) {
+                    const confidence = photoComp.confidence;
+                    const similarity = photoComp.similarity;
+                    const match = photoComp.match;
+                    const threshold = photoComp.threshold_used ?? 0.45;
+                    
+                    let isMatch = false;
+                    if (typeof match === 'string') {
+                      const m = match.toLowerCase();
+                      isMatch = m === 'yes' || m === 'true' || m === 'match';
+                    } else if (typeof similarity === 'number') {
+                      isMatch = similarity >= threshold;
+                    }
+                    
+                    let confidenceStr = "";
+                    if (confidence !== undefined && confidence !== null) {
+                      if (typeof confidence === 'number') {
+                        confidenceStr = ` (Confidence: ${confidence.toFixed(2).replace(/\.00$/, '')}%)`;
+                      } else {
+                        const parsedConfidence = parseFloat(String(confidence).replace(/%/g, ''));
+                        if (!isNaN(parsedConfidence)) {
+                          confidenceStr = ` (Confidence: ${parsedConfidence.toFixed(2).replace(/\.00$/, '')}%)`;
+                        } else {
+                          confidenceStr = ` (Confidence: ${confidence})`;
+                        }
+                      }
+                    }
+                    
+                    faceSummary = `Facial Recognition: Photo comparison indicates a ${isMatch ? 'match' : 'mismatch'}${confidenceStr}.`;
+                  }
+
+                  // Now append to Conclusion_points
+                  const conclusionKey = Object.keys(sanitizedData).find(k => 
+                    k.toLowerCase().includes('conclusion_points') || 
+                    k.toLowerCase().includes('conclusion points')
+                  );
+
+                  let conclusionPoints: string[] = [];
+                  if (conclusionKey && Array.isArray(sanitizedData[conclusionKey])) {
+                    conclusionPoints = [...sanitizedData[conclusionKey]];
+                  }
+
+                  if (fraudSummary) {
+                    conclusionPoints.push(fraudSummary);
+                  }
+                  if (faceSummary) {
+                    conclusionPoints.push(faceSummary);
+                  }
+
+                  if (conclusionPoints.length > 0) {
+                    if (conclusionKey) {
+                      sanitizedData[conclusionKey] = conclusionPoints;
+                    } else {
+                      sanitizedData.Conclusion_points = conclusionPoints;
+                    }
+                  }
+                }
+
                 if (viewMode === 'parsed') {
                   return sanitizedData ? (
                     <ParsedDetailsViewer data={sanitizedData} onPageClick={(pageNumber) => setPdfPage(pageNumber)} />
