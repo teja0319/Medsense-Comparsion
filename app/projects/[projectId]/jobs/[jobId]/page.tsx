@@ -222,7 +222,7 @@ export default function JobDetailPage() {
                   sanitizedData = { duplicate_check: JSON.parse(JSON.stringify(job.duplicate_check)) };
                 }
 
-                if (sanitizedData) {
+                if (sanitizedData && projectId !== '32a8cce6-eacc-4c8b-af54-9a341609d6b2') {
                   // Construct fraudSummary
                   let fraudSummary = "";
                   if (job.duplicate_check) {
