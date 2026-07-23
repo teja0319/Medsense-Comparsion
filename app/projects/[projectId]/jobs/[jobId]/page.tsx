@@ -196,9 +196,19 @@ export default function JobDetailPage() {
                   try {
                     sanitizedData = JSON.parse(JSON.stringify(job.parsed_data));
                     
-                    // Inject duplicate_check object if it exists at root
-                    if (job.duplicate_check) {
+                    // Inject duplicate_check object if it exists at root (except for project 40eeabbd-a303-4389-90a0-8b0984430ddd)
+                    if (job.duplicate_check && projectId !== '40eeabbd-a303-4389-90a0-8b0984430ddd') {
                       sanitizedData.duplicate_check = JSON.parse(JSON.stringify(job.duplicate_check));
+                    }
+
+                    // Remove duplicate_check / fraud_detection for project 40eeabbd-a303-4389-90a0-8b0984430ddd
+                    if (projectId === '40eeabbd-a303-4389-90a0-8b0984430ddd') {
+                      Object.keys(sanitizedData).forEach(k => {
+                        const l = k.toLowerCase().replace(/_/g, ' ').trim();
+                        if (l === 'duplicate check' || l === 'duplicate_check' || l === 'fraud detection' || l === 'fraud_detection') {
+                          delete sanitizedData[k];
+                        }
+                      });
                     }
 
                     // Find photo_comparison key case-insensitively
@@ -217,7 +227,7 @@ export default function JobDetailPage() {
                   } catch (e) {
                     console.error('Failed to sanitize similarity:', e);
                   }
-                } else if (job.duplicate_check) {
+                } else if (job.duplicate_check && projectId !== '40eeabbd-a303-4389-90a0-8b0984430ddd') {
                   // If parsed_data is empty but duplicate_check exists, initialize it
                   sanitizedData = { duplicate_check: JSON.parse(JSON.stringify(job.duplicate_check)) };
                 }
@@ -276,29 +286,31 @@ export default function JobDetailPage() {
                     faceSummary = `Facial Recognition: Photo comparison indicates a ${isMatch ? 'match' : 'mismatch'}${confidenceStr}.`;
                   }
 
-                  // Now append to Conclusion_points
-                  const conclusionKey = Object.keys(sanitizedData).find(k => 
-                    k.toLowerCase().includes('conclusion_points') || 
-                    k.toLowerCase().includes('conclusion points')
-                  );
+                  // Append fraud and face points to Conclusion_points (except for project 40eeabbd-a303-4389-90a0-8b0984430ddd)
+                  if (projectId !== '40eeabbd-a303-4389-90a0-8b0984430ddd') {
+                    const conclusionKey = Object.keys(sanitizedData).find(k => 
+                      k.toLowerCase().includes('conclusion_points') || 
+                      k.toLowerCase().includes('conclusion points')
+                    );
 
-                  let conclusionPoints: string[] = [];
-                  if (conclusionKey && Array.isArray(sanitizedData[conclusionKey])) {
-                    conclusionPoints = [...sanitizedData[conclusionKey]];
-                  }
+                    let conclusionPoints: string[] = [];
+                    if (conclusionKey && Array.isArray(sanitizedData[conclusionKey])) {
+                      conclusionPoints = [...sanitizedData[conclusionKey]];
+                    }
 
-                  if (fraudSummary) {
-                    conclusionPoints.push(fraudSummary);
-                  }
-                  if (faceSummary) {
-                    conclusionPoints.push(faceSummary);
-                  }
+                    if (fraudSummary) {
+                      conclusionPoints.push(fraudSummary);
+                    }
+                    if (faceSummary) {
+                      conclusionPoints.push(faceSummary);
+                    }
 
-                  if (conclusionPoints.length > 0) {
-                    if (conclusionKey) {
-                      sanitizedData[conclusionKey] = conclusionPoints;
-                    } else {
-                      sanitizedData.Conclusion_points = conclusionPoints;
+                    if (conclusionPoints.length > 0) {
+                      if (conclusionKey) {
+                        sanitizedData[conclusionKey] = conclusionPoints;
+                      } else {
+                        sanitizedData.Conclusion_points = conclusionPoints;
+                      }
                     }
                   }
                 }

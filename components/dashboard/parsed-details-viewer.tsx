@@ -717,8 +717,6 @@ export function ParsedDetailsViewer({ data, onPageClick }: ParsedDetailsViewerPr
   const generalFields: Record<string, unknown> = {};
 
   Object.entries(data).forEach(([key, value]) => {
-    // DO NOT skip null or undefined values to ensure ALL keys render!
-    
     if (isArrayOfObjects(value)) {
       sections.push({
         title: formatKey(key),
@@ -738,14 +736,23 @@ export function ParsedDetailsViewer({ data, onPageClick }: ParsedDetailsViewerPr
     }
   });
 
-  // Sort sections: force 'ai_insights_and_rule_engine' or 'ai_adjudication_insights' to be first (index 0) so that it shows up as the second section overall (below General Details)
+  // Sort sections: force priority sections ('ai_insights_and_rule_engine', 'ai_adjudication_insights', 'Visual Tracing & Interpretive Findings') to be first (index 0) so that they show up as the second section overall (below General Details)
   sections.sort((a, b) => {
-    const aKey = a.key.toLowerCase();
-    const bKey = b.key.toLowerCase();
-    const isAAi = aKey === 'ai_insights_and_rule_engine' || aKey === 'ai_adjudication_insights';
-    const isBAi = bKey === 'ai_insights_and_rule_engine' || bKey === 'ai_adjudication_insights';
-    if (isAAi && !isBAi) return -1;
-    if (!isAAi && isBAi) return 1;
+    const aKey = a.key.toLowerCase().replace(/_/g, ' ').trim();
+    const bKey = b.key.toLowerCase().replace(/_/g, ' ').trim();
+
+    const isAPriority = 
+      aKey === 'ai_insights_and_rule_engine' || 
+      aKey === 'ai_adjudication_insights' || 
+      aKey.includes('visual tracing');
+
+    const isBPriority = 
+      bKey === 'ai_insights_and_rule_engine' || 
+      bKey === 'ai_adjudication_insights' || 
+      bKey.includes('visual tracing');
+
+    if (isAPriority && !isBPriority) return -1;
+    if (!isAPriority && isBPriority) return 1;
     return 0;
   });
 
