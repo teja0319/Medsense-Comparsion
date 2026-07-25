@@ -14,6 +14,7 @@ interface Project {
 }
 
 const ALLOWED_PROJECT_IDS = [
+  '40eeabbd-a303-4389-90a0-8b0984430d99',
   '40eeabbd-a303-4389-90a0-8b0984430ddd',
   '40eeabbd-a303-4389-90a0-8b09844301cd',
   '32a8cce6-eacc-4c8b-af54-9a341609d6b2',
