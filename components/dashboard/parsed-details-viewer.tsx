@@ -742,13 +742,13 @@ export function ParsedDetailsViewer({ data, onPageClick }: ParsedDetailsViewerPr
     const bKey = b.key.toLowerCase().replace(/_/g, ' ').trim();
 
     const isAPriority = 
-      aKey === 'ai_insights_and_rule_engine' || 
-      aKey === 'ai_adjudication_insights' || 
+      aKey.includes('ai insights') || 
+      aKey.includes('ai adjudication') || 
       aKey.includes('visual tracing');
 
     const isBPriority = 
-      bKey === 'ai_insights_and_rule_engine' || 
-      bKey === 'ai_adjudication_insights' || 
+      bKey.includes('ai insights') || 
+      bKey.includes('ai adjudication') || 
       bKey.includes('visual tracing');
 
     if (isAPriority && !isBPriority) return -1;
