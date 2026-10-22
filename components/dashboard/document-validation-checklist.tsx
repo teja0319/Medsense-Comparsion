@@ -118,8 +118,15 @@ function formatDate(dateStr: string): string {
   }
 }
 
+// Validator flags present in the data but not shown in the UI or counted in stats
+const HIDDEN_VALIDATORS = new Set(['prescription_verified_by_bank']);
+
+function visibleValidatorEntries(validators: Record<string, any>): Array<[string, any]> {
+  return Object.entries(validators).filter(([key]) => !HIDDEN_VALIDATORS.has(key.toLowerCase()));
+}
+
 function extractValidators(validators: Record<string, any>): ValidatorEntry[] {
-  return Object.entries(validators).map(([key, value]) => ({
+  return visibleValidatorEntries(validators).map(([key, value]) => ({
     key,
     label: formatValidatorLabel(key),
     value,
@@ -133,7 +140,7 @@ function getValidationStats(validators: Record<string, any>): {
   total: number;
   percentage: number;
 } {
-  const boolEntries = Object.entries(validators).filter(
+  const boolEntries = visibleValidatorEntries(validators).filter(
     ([, v]) => typeof v === 'boolean'
   );
   const passed = boolEntries.filter(([key, v]) => {
