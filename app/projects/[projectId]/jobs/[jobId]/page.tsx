@@ -36,6 +36,7 @@ import {
   Stethoscope,
   HelpCircle,
   Loader2,
+  Calculator,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -108,6 +109,7 @@ export default function JobComparisonPage() {
   const isCollapsibleSection = (key: string) => {
     const nonCollapsible = [
       'overview',
+      'claim_summary',
       'document_validation_checklist',
       'details_of_bills_enclosed',
       'queries_to_be_raised',
@@ -364,6 +366,8 @@ export default function JobComparisonPage() {
     }
     
     switch (keyName) {
+      case 'claim_summary':
+        return `${base} border-l-amber-500 bg-amber-50/10`;
       case 'claim_details':
         return `${base} border-l-indigo-500 bg-indigo-50/10`;
       case 'insured_person_details':
@@ -391,6 +395,8 @@ export default function JobComparisonPage() {
 
   const getCardIcon = (keyName: string) => {
     switch (keyName) {
+      case 'claim_summary':
+        return <Calculator className="w-4 h-4 text-amber-500 shrink-0" />;
       case 'claim_details':
         return <CreditCard className="w-4 h-4 text-indigo-500 shrink-0" />;
       case 'insured_person_details':
@@ -614,10 +620,11 @@ export default function JobComparisonPage() {
 
     // Explicit order for structured report elements (important ones at the top)
     const keysOrder = [
-      'document_validation_checklist',
-      'details_of_bills_enclosed',
+      'claim_summary',
       'queries_to_be_raised',
       'repudiation_remarks',
+      'document_validation_checklist',
+      'details_of_bills_enclosed',
       'claim_details',
       'insured_person_details',
       'details_of_primary_insured_bank_account',
@@ -654,6 +661,89 @@ export default function JobComparisonPage() {
           toggleSection(key);
         }
       };
+
+      // ── Special handling for claim_summary (per-category requested vs authorized table) ──
+      if (key === 'claim_summary' && value && typeof value === 'object' && !Array.isArray(value)) {
+        const rows = Object.entries(value).filter(([, v]) => v && typeof v === 'object' && !Array.isArray(v)) as Array<[string, any]>;
+        const totalRequested = rows.reduce((sum, [, v]) => sum + (Number(v.amount_requested) || 0), 0);
+        const totalAuthorized = rows.reduce((sum, [, v]) => sum + (Number(v.amount_authorized) || 0), 0);
+        const formatAmount = (n: any) => `₹${(Number(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const thClass = "text-[10px] font-bold text-slate-500 uppercase tracking-widest py-2 px-3";
+
+        return (
+          <div key={key} className={cardThemeClass}>
+            <div className={currentHeaderClass} onClick={handleHeaderClick}>
+              <div className="flex items-center gap-2">
+                {getCardIcon(key)}
+                <h3 className={sectionTitleClass}>{formatLabel(key)}</h3>
+              </div>
+              {isCollapsible && (isCollapsed ? <ChevronRight className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />)}
+            </div>
+
+            {!isCollapsed && (
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left">
+                      <th className={thClass}>Category</th>
+                      <th className={cn(thClass, "text-right")}>Requested</th>
+                      <th className={cn(thClass, "text-right")}>Authorized</th>
+                      <th className={cn(thClass, "text-right")}>Deducted</th>
+                      <th className={thClass}>Reason for Deduction</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {rows.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="py-3 px-3 text-slate-300 italic font-medium">No amounts claimed</td>
+                      </tr>
+                    )}
+                    {rows.map(([cat, v]) => {
+                      const rowPath = `${currentPath}.${cat}`;
+                      const deducted = (Number(v.amount_requested) || 0) - (Number(v.amount_authorized) || 0);
+                      return (
+                        <tr key={rowPath} className="align-top">
+                          <td className="py-2.5 px-3 font-semibold text-slate-700 whitespace-nowrap">{formatLabel(cat)}</td>
+                          <td className="py-2.5 px-3 text-right font-medium text-slate-700 whitespace-nowrap">
+                            {isEditing ? (
+                              <input type="number" className={cn(inputClass, "text-right min-w-[110px]")} value={v.amount_requested ?? 0}
+                                onChange={(e) => handleFormChange(`${rowPath}.amount_requested`, Number(e.target.value))} />
+                            ) : formatAmount(v.amount_requested)}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-bold text-emerald-700 whitespace-nowrap">
+                            {isEditing ? (
+                              <input type="number" className={cn(inputClass, "text-right min-w-[110px]")} value={v.amount_authorized ?? 0}
+                                onChange={(e) => handleFormChange(`${rowPath}.amount_authorized`, Number(e.target.value))} />
+                            ) : formatAmount(v.amount_authorized)}
+                          </td>
+                          <td className={cn("py-2.5 px-3 text-right font-semibold whitespace-nowrap", deducted > 0 ? "text-rose-600" : "text-slate-400")}>
+                            {formatAmount(deducted)}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-600 leading-relaxed min-w-[240px]">
+                            {isEditing ? (
+                              <textarea className={cn(inputClass, "min-h-[60px]")} value={v.reason_for_deduction ?? ''}
+                                onChange={(e) => handleFormChange(`${rowPath}.reason_for_deduction`, e.target.value)} />
+                            ) : (String(v.reason_for_deduction || '').trim() || <span className="text-slate-300 italic font-medium">None</span>)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-slate-200 bg-slate-50/60">
+                      <td className="py-2.5 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Total</td>
+                      <td className="py-2.5 px-3 text-right font-black text-slate-800 whitespace-nowrap">{formatAmount(totalRequested)}</td>
+                      <td className="py-2.5 px-3 text-right font-black text-emerald-700 whitespace-nowrap">{formatAmount(totalAuthorized)}</td>
+                      <td className="py-2.5 px-3 text-right font-black text-rose-600 whitespace-nowrap">{formatAmount(totalRequested - totalAuthorized)}</td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      }
 
       // ── Special handling for claimed_expenses (mixed object with sub-objects and arrays) ──
       if (key === 'claimed_expenses' && value && typeof value === 'object' && !Array.isArray(value)) {

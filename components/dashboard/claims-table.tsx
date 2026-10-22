@@ -11,6 +11,7 @@ import {
   FileText,
   Search,
   AlertTriangle,
+  Trash2,
 } from 'lucide-react';
 import {
   Table,
@@ -84,6 +85,7 @@ export function ClaimsTable({ projectId }: ClaimsTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [goToPage, setGoToPage] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Check user role on mount
   useEffect(() => {
@@ -239,6 +241,24 @@ export function ClaimsTable({ projectId }: ClaimsTableProps) {
 
   const handleViewJob = (job: Job) => {
     router.push(`/projects/${projectId}/jobs/${job._id}`);
+  };
+
+  const handleDeleteJob = async (job: Job) => {
+    const label = job.files?.[0]?.filename?.replace(/\.pdf$/i, '') || job._id;
+    if (!confirm(`Remove job "${label}"? This permanently deletes the job and its review assignment.`)) return;
+    try {
+      setDeletingId(job._id);
+      const res = await fetch(`/api/jobs/${job._id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to remove job');
+      }
+      await fetchJobs();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to remove job');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   // Generate perfect pagination pages array with ellipses
@@ -401,7 +421,7 @@ export function ClaimsTable({ projectId }: ClaimsTableProps) {
                   <TableHead className="text-slate-600 font-semibold text-xs">Decision</TableHead>
                   <TableHead className="text-slate-600 font-semibold text-xs text-center">Review</TableHead>
                   <TableHead className="text-slate-600 font-semibold text-xs">Review Status</TableHead>
-                  <TableHead className="text-slate-600 font-semibold text-xs w-20">Action</TableHead>
+                  <TableHead className={`text-slate-600 font-semibold text-xs ${isSuperadmin ? 'w-32' : 'w-20'}`}>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -478,16 +498,31 @@ export function ClaimsTable({ projectId }: ClaimsTableProps) {
                       </TableCell>
                       <TableCell>{getReviewStatusBadge(job.reviewStatus || 'unassigned', job.status)}</TableCell>
                       <TableCell>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewJob(job);
-                          }}
-                          className="inline-flex items-center gap-1 text-primary hover:text-primary/80 text-xs font-semibold transition-colors group-hover:underline"
-                        >
-                          View
-                          <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewJob(job);
+                            }}
+                            className="inline-flex items-center gap-1 text-primary hover:text-primary/80 text-xs font-semibold transition-colors group-hover:underline"
+                          >
+                            View
+                            <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                          </button>
+                          {isSuperadmin && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteJob(job);
+                              }}
+                              disabled={deletingId === job._id}
+                              title="Remove job"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {deletingId === job._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                            </button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

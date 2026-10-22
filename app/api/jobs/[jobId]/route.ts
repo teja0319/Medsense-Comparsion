@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMongoClient } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { serializeDocument } from '@/lib/serialize';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -114,3 +115,57 @@ export async function PUT(
   }
 }
 
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ jobId: string }> }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { jobId } = await params;
+
+    if (!ObjectId.isValid(jobId)) {
+      return NextResponse.json(
+        { error: 'Invalid job ID' },
+        { status: 400 }
+      );
+    }
+
+    const client = await getMongoClient();
+    const db = client.db(process.env.MONGODB_DB_NAME || 'admin');
+
+    // Only superadmin can delete jobs
+    const currentUser = await db.collection('users').findOne({ email: user.email });
+    if (currentUser?.role !== 'superadmin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const result = await db.collection('parsing_jobs').deleteOne({
+      _id: new ObjectId(jobId),
+    });
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: 'Job not found' },
+        { status: 404 }
+      );
+    }
+
+    // Clean up queue and assignment records that reference this job
+    await Promise.all([
+      db.collection('claim_assignments').deleteMany({ claimId: jobId }),
+      db.collection('claim_queue').deleteMany({ claimId: jobId }),
+    ]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting job:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete job' },
+      { status: 500 }
+    );
+  }
+}
